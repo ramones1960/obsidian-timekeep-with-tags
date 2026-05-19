@@ -4,6 +4,7 @@ import type { TimekeepSettings } from "@/settings";
 import type { Store } from "@/store";
 
 import { assert } from "@/utils/assert";
+import { formatTagsInput, parseTagsInput } from "@/utils/tags";
 import { formatEditableTimestamp, parseEditableTimestamp } from "@/utils/time";
 
 import { createObsidianIcon } from "@/components/obsidianIcon";
@@ -42,6 +43,8 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 	#startTimeInputEl: HTMLInputElement | undefined;
 	/** Input for the end time */
 	#endTimeInputEl: HTMLInputElement | undefined;
+	/** Input for the entry tags */
+	#tagsInputEl: HTMLInputElement | undefined;
 
 	/** Callback for editing finished / cancelled */
 	onFinishEditing: VoidFunction;
@@ -109,6 +112,18 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 		endTimeInputEl.name = "end-time";
 		this.#endTimeInputEl = endTimeInputEl;
 
+		const tagsLabelEl = formEl.createEl("label", {
+			cls: "timekeep-input-label",
+			text: "Tags",
+		});
+		const tagsInputEl = tagsLabelEl.createEl("input", {
+			cls: "timekeep-input",
+			type: "text",
+			attr: { placeholder: "tag1, tag2" },
+		});
+		tagsInputEl.name = "tags";
+		this.#tagsInputEl = tagsInputEl;
+
 		const actionsEl = formEl.createDiv({
 			cls: "timekeep-editing-actions",
 		});
@@ -158,7 +173,8 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 				this.#startTimeInputEl &&
 				this.#startTimeLabelEl &&
 				this.#endTimeInputEl &&
-				this.#endTimeLabelEl,
+				this.#endTimeLabelEl &&
+				this.#tagsInputEl,
 			"Elements expected to be defined"
 		);
 
@@ -176,6 +192,8 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 		this.#endTimeInputEl.value = entry.endTime
 			? formatEditableTimestamp(entry.endTime, settings)
 			: "";
+
+		this.#tagsInputEl.value = formatTagsInput(entry.tags);
 	}
 
 	onConfirmDelete() {
@@ -202,7 +220,10 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 
 	onSubmit(event: Event) {
 		assert(
-			this.#nameInputEl && this.#startTimeInputEl && this.#endTimeInputEl,
+			this.#nameInputEl &&
+				this.#startTimeInputEl &&
+				this.#endTimeInputEl &&
+				this.#tagsInputEl,
 			"Expected inputs to be defined"
 		);
 
@@ -212,11 +233,17 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 		const name = this.#nameInputEl.value;
 		const startTime = this.#startTimeInputEl.value;
 		const endTime = this.#endTimeInputEl.value;
+		const tags = parseTagsInput(this.#tagsInputEl.value);
 
 		const settings = this.settings.getState();
 		const entry = this.entry;
 
-		const newEntry = { ...entry, name };
+		const newEntry: TimeEntry = { ...entry, name };
+		if (tags.length > 0) {
+			newEntry.tags = tags;
+		} else {
+			delete newEntry.tags;
+		}
 
 		// Update the start and end times for non groups
 		if (newEntry.subEntries === null) {

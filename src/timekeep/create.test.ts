@@ -24,6 +24,26 @@ describe("createEntry", () => {
 		const entry2 = createEntry("Block 2", currentTime);
 		expect(entry1.id).not.toBe(entry2.id);
 	});
+
+	it("attaches tags when provided", () => {
+		const currentTime = moment();
+		const entry = createEntry("Block", currentTime, ["work", "urgent"]);
+
+		expect(stripEntryRuntimeData(entry)).toStrictEqual({
+			name: "Block",
+			startTime: currentTime,
+			endTime: null,
+			subEntries: null,
+			tags: ["work", "urgent"],
+		});
+	});
+
+	it("does not attach an empty tags array", () => {
+		const currentTime = moment();
+		const entry = createEntry("Block", currentTime, []);
+
+		expect(entry.tags).toBeUndefined();
+	});
 });
 
 describe("withEntry", () => {
@@ -52,6 +72,13 @@ describe("withEntry", () => {
 
 		const output = withEntry(input, "New Test Entry", currentTime);
 		expect(stripEntriesRuntimeData(output)).toEqual(stripEntriesRuntimeData(expected));
+	});
+
+	it("propagates tags to the new entry", () => {
+		const currentTime = moment();
+		const output = withEntry([], "Tagged", currentTime, ["project-x"]);
+
+		expect(output[0].tags).toEqual(["project-x"]);
 	});
 });
 

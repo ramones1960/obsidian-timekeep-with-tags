@@ -38,6 +38,9 @@ const TIME_ENTRY_SINGLE = v.pipe(
 
 		// Single entries have no children
 		subEntries: v.null(),
+
+		// Optional tags for categorizing the entry (used by tag-based aggregation)
+		tags: v.optional(v.array(v.string())),
 	}),
 	// At runtime a unique ID is inserted
 	v.transform((entry) => ({
@@ -56,6 +59,8 @@ const TIME_ENTRY_GROUP_BASE = v.object({
 	// Optional field to indicate the entry should stay as a group when non-started and should only create
 	// sub entries when starting
 	folder: v.optional(v.boolean()),
+	// Optional tags applied to this group; inherited by sub-entries during aggregation
+	tags: v.optional(v.array(v.string())),
 });
 
 const TIME_ENTRY_GROUP = v.pipe(
@@ -103,6 +108,11 @@ export function stripEntriesRuntimeData(entries: TimeEntry[]): unknown[] {
 export function stripEntryRuntimeData(entry: TimeEntry): unknown {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars -- we are intentionally discarding the id
 	const { id, ...entryWithoutId } = entry;
+
+	// Drop empty tags so they don't pollute the stored JSON
+	if (entryWithoutId.tags !== undefined && entryWithoutId.tags.length === 0) {
+		delete entryWithoutId.tags;
+	}
 
 	if (entryWithoutId.subEntries !== null) {
 		return {

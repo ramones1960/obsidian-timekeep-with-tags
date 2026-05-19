@@ -11,7 +11,7 @@ import {
 	formatPdfRowDate,
 } from "@/utils/time";
 
-import { getEntryDuration, getTotalDuration } from "@/timekeep/queries";
+import { getEffectiveTags, getEntryDuration, getTotalDuration } from "@/timekeep/queries";
 import type { TimeEntry, Timekeep } from "@/timekeep/schema";
 
 /**
@@ -157,7 +157,7 @@ function createPdfTable(
 	return {
 		table: {
 			headerRows: 1,
-			widths: ["*", 70, 70, 50],
+			widths: ["*", 70, 70, 50, 80],
 			body: [
 				[
 					{
@@ -181,6 +181,12 @@ function createPdfTable(
 						text: "Duration",
 						style: ["tableCell", "tableCellHeader"],
 						alignment: "right",
+						border: [false, false, false, true],
+					},
+					{
+						text: "Tags",
+						style: ["tableCell", "tableCellHeader"],
+						alignment: "left",
 						border: [false, false, true, true],
 					},
 				],
@@ -195,6 +201,7 @@ function createPdfTable(
 						bold: true,
 						alignment: "right",
 					},
+					{ text: "", style: "tableCell" },
 				],
 			],
 		},
@@ -253,17 +260,22 @@ function createPdfTableRows(
 	settings: TimekeepSettings,
 	currentTime: Moment
 ): TableEntryRow[] {
-	type StackEntry = { entry: TimeEntry; depth: number };
+	type StackEntry = { entry: TimeEntry; depth: number; inheritedTags: string[] };
 
 	const rows: TableEntryRow[] = [];
-	const stack: StackEntry[] = entries.map((entry) => ({ entry, depth: 0 }));
+	const stack: StackEntry[] = entries.map((entry) => ({
+		entry,
+		depth: 0,
+		inheritedTags: [],
+	}));
 
 	while (stack.length > 0) {
-		const { entry, depth } = stack.pop()!;
+		const { entry, depth, inheritedTags } = stack.pop()!;
+		const effectiveTags = getEffectiveTags(entry, inheritedTags);
 
 		rows.push({
 			group: entry.subEntries !== null && entry.subEntries.length > 0,
-			row: createTableEntryCells(entry, depth, settings, currentTime),
+			row: createTableEntryCells(entry, depth, settings, currentTime, effectiveTags),
 			depth,
 		});
 
@@ -272,6 +284,7 @@ function createPdfTableRows(
 				stack.push({
 					entry: entry.subEntries[i],
 					depth: depth + 1,
+					inheritedTags: effectiveTags,
 				});
 			}
 		}
@@ -322,7 +335,8 @@ function createTableEntryCells(
 	entry: TimeEntry,
 	depth: number,
 	settings: TimekeepSettings,
-	currentTime: Moment
+	currentTime: Moment,
+	effectiveTags: string[] = []
 ): TableCell[] {
 	const duration = getEntryDuration(entry, currentTime);
 	const durationFormatted = formatDurationLong(duration);
@@ -361,6 +375,11 @@ function createTableEntryCells(
 			text: durationFormatted,
 			style: ["tableCell", "tableCellTime"],
 			alignment: "right",
+		},
+		{
+			text: effectiveTags.join(", "),
+			style: ["tableCell"],
+			alignment: "left",
 			border: [false, false, true, true],
 		},
 	];

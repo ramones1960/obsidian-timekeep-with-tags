@@ -11,7 +11,7 @@ import { Timekeep } from "@/timekeep/schema";
  * @returns The created row
  */
 function createHeader(): RawTableRow {
-	return ["Block", "Start Time", "End time", "Duration"];
+	return ["Block", "Start Time", "End time", "Duration", "Tags"];
 }
 
 /**
@@ -34,10 +34,18 @@ export function createCSV(
 		...createRawTable(timekeep.entries, settings, currentTime),
 	];
 
+	const delimiter = settings.csvDelimiter;
+	const escapeCell = (cell: string): string => {
+		if (cell.includes(delimiter) || cell.includes('"') || cell.includes("\n")) {
+			return `"${cell.replace(/"/g, '""')}"`;
+		}
+		return cell;
+	};
+
 	let output = "";
 
 	for (const row of rawTable) {
-		output += row.join(settings.csvDelimiter);
+		output += row.map(escapeCell).join(delimiter);
 		output += "\n";
 	}
 

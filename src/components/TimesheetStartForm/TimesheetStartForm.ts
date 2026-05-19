@@ -4,6 +4,7 @@ import type { TimekeepSettings } from "@/settings";
 import type { Store } from "@/store";
 
 import { assert } from "@/utils/assert";
+import { parseTagsInput } from "@/utils/tags";
 
 import { DomComponent } from "@/components/DomComponent";
 import { createObsidianIcon } from "@/components/obsidianIcon";
@@ -28,6 +29,9 @@ export class TimesheetStartForm extends DomComponent {
 
 	/** Name input for starting entries */
 	#nameInput: TimesheetNameInput | undefined;
+
+	/** Tags input for starting entries */
+	#tagsInputEl: HTMLInputElement | undefined;
 
 	/** Warning message element  */
 	#blockPauseWarningEl: HTMLElement | undefined;
@@ -72,6 +76,19 @@ export class TimesheetStartForm extends DomComponent {
 		this.#nameInput = nameInput;
 		this.addChild(nameInput);
 
+		const tagsWrapperEl = formEl.createDiv({ cls: "timekeep-tags-wrapper" });
+		const tagsLabelEl = tagsWrapperEl.createEl("label", { text: "Tags: " });
+		tagsLabelEl.htmlFor = "timekeepBlockTags";
+		const tagsInputEl = tagsWrapperEl.createEl("input", {
+			cls: "timekeep-input timekeep-tags-input",
+			type: "text",
+			attr: {
+				id: "timekeepBlockTags",
+				placeholder: "tag1, tag2",
+			},
+		});
+		this.#tagsInputEl = tagsInputEl;
+
 		const startButton = formEl.createEl("button", {
 			cls: "timekeep-start",
 			title: "Start",
@@ -104,16 +121,19 @@ export class TimesheetStartForm extends DomComponent {
 		event.stopPropagation();
 
 		const nameInput = this.#nameInput;
-		assert(nameInput, "Name input element should be defined");
+		const tagsInputEl = this.#tagsInputEl;
+		assert(nameInput && tagsInputEl, "Name and tags inputs should be defined");
 
 		const name = nameInput.getValue();
+		const tags = parseTagsInput(tagsInputEl.value);
 
 		this.timekeep.setState((timekeep) => {
 			const currentTime = moment();
-			const entries = startNewEntry(name, currentTime, timekeep.entries);
+			const entries = startNewEntry(name, currentTime, timekeep.entries, tags);
 
-			// Reset name input
+			// Reset inputs
 			nameInput.resetValue();
+			tagsInputEl.value = "";
 
 			return {
 				...timekeep,

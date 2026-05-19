@@ -13,7 +13,7 @@ import { Timekeep, TimeEntry } from "@/timekeep/schema";
  * @returns The created row
  */
 function createHeader(): RawTableRow {
-	return ["Block", "Start Time", "End time", "Duration"];
+	return ["Block", "Start Time", "End time", "Duration", "Tags"];
 }
 
 /**
@@ -30,7 +30,7 @@ function createFooter(
 	durationFormat: DurationFormat
 ): RawTableRow {
 	const total: string = formatDuration(durationFormat, getTotalDuration(entries, currentTime));
-	return ["**Total**", "", "", `**${total}**`];
+	return ["**Total**", "", "", `**${total}**`, ""];
 }
 
 /**

@@ -215,3 +215,138 @@ export function getEntriesNames(entries: TimeEntry[], names: Set<string>) {
 		}
 	}
 }
+
+/**
+ * Resolves the effective tags of an entry by combining its own tags
+ * with `inheritedTags` from any parent groups. Duplicates are removed
+ * while preserving the order: inherited first, own tags appended.
+ *
+ * @param entry The entry to resolve tags for
+ * @param inheritedTags Tags inherited from parent groups
+ * @returns The full resolved tag list
+ */
+export function getEffectiveTags(entry: TimeEntry, inheritedTags: string[] = []): string[] {
+	const own = entry.tags ?? [];
+	if (own.length === 0 && inheritedTags.length === 0) return [];
+
+	const seen = new Set<string>();
+	const result: string[] = [];
+	for (const tag of [...inheritedTags, ...own]) {
+		if (!seen.has(tag)) {
+			seen.add(tag);
+			result.push(tag);
+		}
+	}
+	return result;
+}
+
+/**
+ * Collect all unique tags within the provided entries
+ * (including nested entries).
+ *
+ * @param entries The entries to scan
+ * @returns A set of all unique tags found
+ */
+export function getAllTags(entries: TimeEntry[]): Set<string> {
+	const tags = new Set<string>();
+	const stack: TimeEntry[] = [...entries];
+
+	while (stack.length > 0) {
+		const entry = stack.pop()!;
+
+		if (entry.tags) {
+			for (const tag of entry.tags) {
+				tags.add(tag);
+			}
+		}
+
+		if (entry.subEntries !== null) {
+			stack.push(...entry.subEntries);
+		}
+	}
+
+	return tags;
+}
+
+/**
+ * Aggregates duration (in milliseconds) by tag across the
+ * provided entries. Tags on parent groups are inherited by
+ * all sub-entries: a leaf entry's duration contributes to
+ * every tag in its own + inherited tag set.
+ *
+ * Untagged time (after inheritance) is grouped under the
+ * empty-string key `""`. Callers can ignore that key when
+ * displaying only tagged totals.
+ *
+ * @param entries The entries to aggregate
+ * @param currentTime The current time for running entries
+ * @returns A map of tag -> total duration in milliseconds
+ */
+export function getDurationByTag(
+	entries: TimeEntry[],
+	currentTime: Moment
+): Record<string, number> {
+	const totals: Record<string, number> = {};
+
+	const walk = (entry: TimeEntry, inheritedTags: string[]) => {
+		const effective = getEffectiveTags(entry, inheritedTags);
+
+		if (entry.subEntries !== null) {
+			for (const sub of entry.subEntries) {
+				walk(sub, effective);
+			}
+			return;
+		}
+
+		const duration = getEntryDuration(entry, currentTime);
+		if (duration === 0) return;
+
+		if (effective.length === 0) {
+			totals[""] = (totals[""] ?? 0) + duration;
+			return;
+		}
+
+		for (const tag of effective) {
+			totals[tag] = (totals[tag] ?? 0) + duration;
+		}
+	};
+
+	for (const entry of entries) {
+		walk(entry, []);
+	}
+
+	return totals;
+}
+
+/**
+ * Returns the flat list of leaf entries that carry the given tag
+ * (either directly or via parent group inheritance).
+ *
+ * @param entries Entries to search
+ * @param tag The target tag
+ * @returns Matching leaf entries
+ */
+export function getEntriesByTag(entries: TimeEntry[], tag: string): TimeEntry[] {
+	const matches: TimeEntry[] = [];
+
+	const walk = (entry: TimeEntry, inheritedTags: string[]) => {
+		const effective = getEffectiveTags(entry, inheritedTags);
+
+		if (entry.subEntries !== null) {
+			for (const sub of entry.subEntries) {
+				walk(sub, effective);
+			}
+			return;
+		}
+
+		if (effective.includes(tag)) {
+			matches.push(entry);
+		}
+	};
+
+	for (const entry of entries) {
+		walk(entry, []);
+	}
+
+	return matches;
+}

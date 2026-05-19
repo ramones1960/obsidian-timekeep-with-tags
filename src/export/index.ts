@@ -3,16 +3,16 @@ import type { Moment } from "moment";
 import { TimekeepSettings } from "@/settings";
 import { formatDuration, formatTimestamp } from "@/utils/time";
 
-import { getEntryDuration } from "@/timekeep/queries";
+import { getEffectiveTags, getEntryDuration } from "@/timekeep/queries";
 import { TimeEntry } from "@/timekeep/schema";
 import { getEntriesSorted } from "@/timekeep/sort";
 
 export { createCSV } from "./csv";
 export { createMarkdownTable } from "./markdown-table";
 
-export type RawTableRow = [string, string, string, string];
+export type RawTableRow = [string, string, string, string, string];
 
-export const TOTAL_COLUMNS = 4;
+export const TOTAL_COLUMNS = 5;
 
 /**
  * Flattens the nested timekeeping structure into a flat
@@ -28,7 +28,7 @@ export function createRawTable(
 	settings: TimekeepSettings,
 	currentTime: Moment
 ): RawTableRow[] {
-	return entries.flatMap((entry) => createRawTableEntries(entry, settings, currentTime));
+	return entries.flatMap((entry) => createRawTableEntries(entry, settings, currentTime, []));
 }
 
 /**
@@ -38,13 +38,16 @@ export function createRawTable(
  * @param entry The entry to flatten
  * @param settings The settings to use while flattening
  * @param currentTime The current time to use for unfinished entries
+ * @param inheritedTags Tags inherited from parent groups
  * @returns The flattened rows
  */
 function createRawTableEntries(
 	entry: TimeEntry,
 	settings: TimekeepSettings,
-	currentTime: Moment
+	currentTime: Moment,
+	inheritedTags: string[]
 ): RawTableRow[] {
+	const effectiveTags = getEffectiveTags(entry, inheritedTags);
 	const rows: RawTableRow[] = [
 		[
 			entry.name,
@@ -56,6 +59,8 @@ function createRawTableEntries(
 				: "",
 			// Duration of the entry
 			formatDuration(settings.exportDurationFormat, getEntryDuration(entry, currentTime)),
+			// Tags (effective: own + inherited from parent groups)
+			effectiveTags.join(", "),
 		],
 	];
 
@@ -63,7 +68,7 @@ function createRawTableEntries(
 		const entries = getEntriesSorted(entry.subEntries, settings);
 
 		for (const entry of entries) {
-			rows.push(...createRawTableEntries(entry, settings, currentTime));
+			rows.push(...createRawTableEntries(entry, settings, currentTime, effectiveTags));
 		}
 	}
 

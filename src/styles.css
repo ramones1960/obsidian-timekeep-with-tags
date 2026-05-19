@@ -450,3 +450,35 @@
 	padding: 0px;
 	margin: 0px;
 }
+
+/* Tags input row in the start form */
+.timekeep-tags-wrapper {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-top: 0.25rem;
+}
+
+.timekeep-tags-input {
+	flex: 1;
+}
+
+/* Tag chips shown next to entry name */
+.timekeep-tags {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-left: 8px;
+	vertical-align: middle;
+}
+
+.timekeep-tag {
+	display: inline-block;
+	padding: 1px 6px;
+	font-size: 0.75em;
+	line-height: 1.4;
+	border-radius: 10px;
+	background-color: var(--background-modifier-hover);
+	color: var(--text-muted);
+	white-space: nowrap;
+}

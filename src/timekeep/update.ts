@@ -57,6 +57,26 @@ export function setEntryCollapsed(entry: TimeEntry, collapsed: boolean): TimeEnt
 }
 
 /**
+ * Updates the tags on an entry. An empty (or undefined) tag list
+ * removes the field so it isn't serialized.
+ *
+ * @param entry The entry to update
+ * @param tags The new tag list
+ * @returns The new entry
+ */
+export function setEntryTags(entry: TimeEntry, tags: string[] | undefined): TimeEntry {
+	const newEntry: TimeEntry = { ...entry };
+
+	if (tags && tags.length > 0) {
+		newEntry.tags = tags;
+	} else {
+		delete newEntry.tags;
+	}
+
+	return newEntry;
+}
+
+/**
  * Stops all running entries within the provided timekeep
  *
  * @param timekeep The input timekeep to stop

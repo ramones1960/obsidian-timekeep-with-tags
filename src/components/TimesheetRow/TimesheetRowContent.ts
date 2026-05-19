@@ -88,6 +88,13 @@ export class TimesheetRowContent extends ReplaceableComponent {
 		const name = new TimesheetEntryName(nameEl, this.app, entry.name);
 		this.addChild(name);
 
+		if (entry.tags && entry.tags.length > 0) {
+			const tagsContainerEl = nameColEl.createSpan({ cls: "timekeep-tags" });
+			for (const tag of entry.tags) {
+				tagsContainerEl.createSpan({ cls: "timekeep-tag", text: `#${tag}` });
+			}
+		}
+
 		if (entry.subEntries !== null) {
 			createObsidianIcon(
 				nameEl,

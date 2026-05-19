@@ -21,6 +21,19 @@ This plugin provides a command for inserting time trackers: `Timekeep: Insert Tr
 ```
 ````
 
+## 🏷️ Tags
+
+You can attach tags to a time entry to categorize work (similar to Toggl Track). Tags are entered in the dedicated **Tags** field in the start form (and in the edit form for existing entries). Comma or space separated, with or without a leading `#`:
+
+```
+project-x, urgent
+#project-x #urgent
+```
+
+Tags applied to a **group** entry are inherited by every sub-entry during aggregation, so you can tag once at the project level and still get per-sub-entry totals attributed to it.
+
+Tags also appear as a `Tags` column in all export formats (Markdown, CSV, PDF, JSON).
+
 ## ✏️ Editing & Deleting
 
 If you accidentally gave a block an incorrect name or started the timer late, you can use the editing feature to update the stored data or delete the entry.
@@ -153,6 +166,80 @@ for (const timekeep of timekeeps) {
 
 // Total running duration is in milliseconds
 dv.span(totalRunningDuration);
+```
+````
+
+### Aggregating time by tag
+
+Tags can be aggregated across all timekeeps in a file (or across the whole vault) with `queries.getDurationByTag`. Parent-group tags are inherited by their sub-entries, so a tag set on the group is automatically attributed to every leaf entry beneath it.
+
+````
+```dataviewjs
+const activeFile = this.app.workspace.getActiveFile();
+if (!activeFile || !activeFile.name) return;
+
+const text = await this.app.vault.read(activeFile);
+const timekeepPlugin = this.app.plugins.plugins.timekeep.api;
+const timekeeps = timekeepPlugin.parser.extractTimekeepCodeblocks(text);
+
+const currentTime = moment();
+const totals = {};
+
+for (const timekeep of timekeeps) {
+  const byTag = timekeepPlugin.queries.getDurationByTag(timekeep.entries, currentTime);
+  for (const [tag, ms] of Object.entries(byTag)) {
+    totals[tag] = (totals[tag] ?? 0) + ms;
+  }
+}
+
+// Drop the empty-string key holding untagged time, if you don't want to display it
+delete totals[""];
+
+const rows = Object.entries(totals)
+  .sort((a, b) => b[1] - a[1])
+  .map(([tag, ms]) => [
+    `#${tag}`,
+    moment.duration(ms).format("h[h] m[m] s[s]", { trim: "both" }),
+  ]);
+
+dv.table(["Tag", "Duration"], rows);
+```
+````
+
+To aggregate by tag across **every** timekeep in your vault, swap the `extractTimekeepCodeblocks` step for `getTimekeepsWithinVault`. Registry entries come in two shapes — `.timekeep` for dedicated `.timekeep` files, and `.timekeeps[]` for codeblocks inside markdown files — so iterate both:
+
+````
+```dataviewjs
+const timekeepPlugin = this.app.plugins.plugins.timekeep.api;
+const registryEntries = await timekeepPlugin.getTimekeepsWithinVault(this.app.vault);
+
+const currentTime = moment();
+const totals = {};
+
+const addEntries = (entries) => {
+  const byTag = timekeepPlugin.queries.getDurationByTag(entries, currentTime);
+  for (const [tag, ms] of Object.entries(byTag)) {
+    totals[tag] = (totals[tag] ?? 0) + ms;
+  }
+};
+
+for (const entry of registryEntries) {
+  if (entry.timekeep) {
+    addEntries(entry.timekeep.entries);
+  } else if (entry.timekeeps) {
+    for (const tk of entry.timekeeps) {
+      addEntries(tk.timekeep.entries);
+    }
+  }
+}
+
+delete totals[""];
+
+const rows = Object.entries(totals)
+  .sort((a, b) => b[1] - a[1])
+  .map(([tag, ms]) => [`#${tag}`, moment.duration(ms).humanize()]);
+
+dv.table(["Tag", "Duration"], rows);
 ```
 ````
 

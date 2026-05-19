@@ -17,13 +17,14 @@ import { TimeEntry } from "@/timekeep/schema";
 export function startNewEntry(
 	name: string,
 	currentTime: Moment,
-	entries: TimeEntry[]
+	entries: TimeEntry[],
+	tags?: string[]
 ): TimeEntry[] {
 	// Stop any already running entries
 	entries = stopRunningEntries(entries, currentTime);
 
 	// Add the new entry
-	entries = withEntry(entries, name, currentTime);
+	entries = withEntry(entries, name, currentTime, tags);
 	return entries;
 }
 
@@ -39,7 +40,8 @@ export function startNewEntry(
 export function startNewNestedEntry(
 	currentTime: Moment,
 	targetEntryId: number,
-	entries: TimeEntry[]
+	entries: TimeEntry[],
+	tags?: string[]
 ): TimeEntry[] {
 	// Stop any already running entries
 	entries = stopRunningEntries(entries, currentTime);
@@ -56,10 +58,14 @@ export function startNewNestedEntry(
 			entries,
 			// Ensure the current entry is ended
 			currentEntry.id,
-			withSubEntry(currentEntry, "", currentTime)
+			withSubEntry(currentEntry, "", currentTime, tags)
 		);
 	}
 
 	// If the entry hasn't been started then start it
-	return updateEntry(entries, currentEntry.id, createEntry(currentEntry.name, currentTime));
+	return updateEntry(
+		entries,
+		currentEntry.id,
+		createEntry(currentEntry.name, currentTime, tags)
+	);
 }
