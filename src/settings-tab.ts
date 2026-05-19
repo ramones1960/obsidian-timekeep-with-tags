@@ -289,13 +289,14 @@ export class TimekeepSettingsTab extends PluginSettingTab {
 		new Setting(this.containerEl)
 			.setName("Pdf font family")
 			.setDesc(
-				"Font family to use when exporting to pdf, the Rubik font family is recommended if you use Arabic characters"
+				"Font family to use when exporting to pdf. Use Rubik for Arabic characters, or Noto Sans JP for Japanese characters."
 			)
 
 			.addDropdown((t) => {
 				t.addOptions({
 					[FontFamily.ROBOTO]: "Roboto",
 					[FontFamily.RUBIK]: "Rubik",
+					[FontFamily.NOTO_SANS_JP]: "Noto Sans JP (Japanese)",
 				});
 				t.setValue(String(settings.pdfFontFamily));
 				t.onChange((v) => {

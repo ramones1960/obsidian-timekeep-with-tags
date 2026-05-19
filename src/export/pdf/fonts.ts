@@ -2,6 +2,8 @@ import type { TFontDictionary } from "pdfmake/interfaces";
 
 import pdfMake from "pdfmake";
 
+import NotoSansJPBold from "@/fonts/NotoSansJP-Bold.ttf";
+import NotoSansJPRegular from "@/fonts/NotoSansJP-Regular.ttf";
 import RobotoBold from "@/fonts/Roboto-Bold.ttf";
 import RobotoRegular from "@/fonts/Roboto-Regular.ttf";
 import RubikBold from "@/fonts/Rubik-Bold.ttf";
@@ -20,6 +22,10 @@ function initializeFonts() {
 			normal: "Rubik-Regular.ttf",
 			bold: "Rubik-Bold.ttf",
 		},
+		NotoSansJP: {
+			normal: "NotoSansJP-Regular.ttf",
+			bold: "NotoSansJP-Bold.ttf",
+		},
 	};
 
 	const stripDataUrlPrefix = (text: string): string =>
@@ -30,6 +36,8 @@ function initializeFonts() {
 		"Roboto-Bold.ttf": stripDataUrlPrefix(RobotoBold),
 		"Rubik-Regular.ttf": stripDataUrlPrefix(RubikRegular),
 		"Rubik-Bold.ttf": stripDataUrlPrefix(RubikBold),
+		"NotoSansJP-Regular.ttf": stripDataUrlPrefix(NotoSansJPRegular),
+		"NotoSansJP-Bold.ttf": stripDataUrlPrefix(NotoSansJPBold),
 	});
 
 	pdfMake.addFonts(fonts);

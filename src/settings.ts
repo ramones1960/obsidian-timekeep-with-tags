@@ -35,6 +35,7 @@ export enum SortOrder {
 export enum FontFamily {
 	ROBOTO = "Roboto",
 	RUBIK = "Rubik",
+	NOTO_SANS_JP = "NotoSansJP",
 }
 
 export enum UnstartedOrder {
