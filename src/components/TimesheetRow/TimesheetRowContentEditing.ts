@@ -9,11 +9,14 @@ import { formatEditableTimestamp, parseEditableTimestamp } from "@/utils/time";
 
 import { createObsidianIcon } from "@/components/obsidianIcon";
 import { ReplaceableComponent } from "@/components/ReplaceableComponent";
+import { TimesheetTagsInput } from "@/components/TimesheetTagsInput";
 
 import { ConfirmModal } from "@/modals/ConfirmModal";
 
 import type { TimeEntry, Timekeep } from "@/timekeep/schema";
 import { removeEntry, updateEntry } from "@/timekeep/update";
+
+import { TimekeepAutocomplete } from "@/service/autocomplete";
 
 /**
  * Component for a timesheet row entry that is currently
@@ -28,6 +31,8 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 
 	/** Access to the timekeep settings */
 	settings: Store<TimekeepSettings>;
+	/** Access to autocomplete (optional) */
+	autocomplete: TimekeepAutocomplete | undefined;
 
 	/** The entry for this row */
 	entry: TimeEntry;
@@ -43,7 +48,9 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 	#startTimeInputEl: HTMLInputElement | undefined;
 	/** Input for the end time */
 	#endTimeInputEl: HTMLInputElement | undefined;
-	/** Input for the entry tags */
+	/** Input for the entry tags (suggestion-enabled when autocomplete is present) */
+	#tagsInput: TimesheetTagsInput | undefined;
+	/** Fallback plain input when autocomplete is not provided */
 	#tagsInputEl: HTMLInputElement | undefined;
 
 	/** Callback for editing finished / cancelled */
@@ -55,13 +62,15 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 		timekeep: Store<Timekeep>,
 		settings: Store<TimekeepSettings>,
 		entry: TimeEntry,
-		onFinishEditing: VoidFunction
+		onFinishEditing: VoidFunction,
+		autocomplete?: TimekeepAutocomplete
 	) {
 		super(containerEl);
 
 		this.app = app;
 		this.timekeep = timekeep;
 		this.settings = settings;
+		this.autocomplete = autocomplete;
 
 		this.entry = entry;
 		this.onFinishEditing = onFinishEditing;
@@ -116,13 +125,23 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 			cls: "timekeep-input-label",
 			text: "Tags",
 		});
-		const tagsInputEl = tagsLabelEl.createEl("input", {
-			cls: "timekeep-input",
-			type: "text",
-			attr: { placeholder: "tag1, tag2" },
-		});
-		tagsInputEl.name = "tags";
-		this.#tagsInputEl = tagsInputEl;
+
+		if (this.autocomplete) {
+			const tagsInput = new TimesheetTagsInput(tagsLabelEl, this.autocomplete, {
+				inputId: `timekeepRowTags-${this.entry.id}`,
+				inputClasses: "timekeep-input",
+			});
+			this.addChild(tagsInput);
+			this.#tagsInput = tagsInput;
+		} else {
+			const tagsInputEl = tagsLabelEl.createEl("input", {
+				cls: "timekeep-input",
+				type: "text",
+				attr: { placeholder: "tag1, tag2" },
+			});
+			tagsInputEl.name = "tags";
+			this.#tagsInputEl = tagsInputEl;
+		}
 
 		const actionsEl = formEl.createDiv({
 			cls: "timekeep-editing-actions",
@@ -174,7 +193,7 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 				this.#startTimeLabelEl &&
 				this.#endTimeInputEl &&
 				this.#endTimeLabelEl &&
-				this.#tagsInputEl,
+				(this.#tagsInput || this.#tagsInputEl),
 			"Elements expected to be defined"
 		);
 
@@ -193,7 +212,12 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 			? formatEditableTimestamp(entry.endTime, settings)
 			: "";
 
-		this.#tagsInputEl.value = formatTagsInput(entry.tags);
+		const tagsValue = formatTagsInput(entry.tags);
+		if (this.#tagsInput) {
+			this.#tagsInput.setValue(tagsValue);
+		} else if (this.#tagsInputEl) {
+			this.#tagsInputEl.value = tagsValue;
+		}
 	}
 
 	onConfirmDelete() {
@@ -223,7 +247,7 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 			this.#nameInputEl &&
 				this.#startTimeInputEl &&
 				this.#endTimeInputEl &&
-				this.#tagsInputEl,
+				(this.#tagsInput || this.#tagsInputEl),
 			"Expected inputs to be defined"
 		);
 
@@ -233,7 +257,10 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 		const name = this.#nameInputEl.value;
 		const startTime = this.#startTimeInputEl.value;
 		const endTime = this.#endTimeInputEl.value;
-		const tags = parseTagsInput(this.#tagsInputEl.value);
+		const tagsValue = this.#tagsInput
+			? this.#tagsInput.getValue()
+			: (this.#tagsInputEl?.value ?? "");
+		const tags = parseTagsInput(tagsValue);
 
 		const settings = this.settings.getState();
 		const entry = this.entry;

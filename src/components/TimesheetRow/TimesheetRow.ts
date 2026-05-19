@@ -10,6 +10,8 @@ import { ContentComponent } from "@/components/ContentComponent";
 
 import type { TimeEntry, Timekeep } from "@/timekeep/schema";
 
+import { TimekeepAutocomplete } from "@/service/autocomplete";
+
 /**
  * This container allows a entry to switch between the default and
  * editable views without re-rendering the entire table or having a
@@ -29,6 +31,8 @@ export class TimesheetRow extends ContentComponent<
 	entry: TimeEntry;
 	/** Indentation level for the entry */
 	indent: number;
+	/** Access to autocomplete (optional) */
+	autocomplete: TimekeepAutocomplete | undefined;
 
 	constructor(
 		containerEl: HTMLElement,
@@ -36,7 +40,8 @@ export class TimesheetRow extends ContentComponent<
 		timekeep: Store<Timekeep>,
 		settings: Store<TimekeepSettings>,
 		entry: TimeEntry,
-		indent: number
+		indent: number,
+		autocomplete?: TimekeepAutocomplete
 	) {
 		super(containerEl);
 
@@ -46,6 +51,7 @@ export class TimesheetRow extends ContentComponent<
 
 		this.entry = entry;
 		this.indent = indent;
+		this.autocomplete = autocomplete;
 	}
 
 	onload(): void {
@@ -61,7 +67,8 @@ export class TimesheetRow extends ContentComponent<
 				this.timekeep,
 				this.settings,
 				this.entry,
-				this.onViewContent.bind(this)
+				this.onViewContent.bind(this),
+				this.autocomplete
 			)
 		);
 	}

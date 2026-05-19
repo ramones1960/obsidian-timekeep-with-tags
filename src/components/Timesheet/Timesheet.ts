@@ -66,7 +66,13 @@ export class Timesheet extends ReplaceableComponent {
 
 		const runningEntry = new TimesheetRunningEntry(wrapperEl, this.timekeep, this.settings);
 
-		const table = new TimesheetTable(wrapperEl, this.app, this.timekeep, this.settings);
+		const table = new TimesheetTable(
+			wrapperEl,
+			this.app,
+			this.timekeep,
+			this.settings,
+			this.autocomplete
+		);
 
 		const exportActions = new TimesheetExportActions(
 			wrapperEl,

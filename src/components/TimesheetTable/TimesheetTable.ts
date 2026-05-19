@@ -11,6 +11,8 @@ import { TimesheetRow } from "@/components/TimesheetRow";
 import type { Timekeep } from "@/timekeep/schema";
 import { getEntriesSorted } from "@/timekeep/sort";
 
+import { TimekeepAutocomplete } from "@/service/autocomplete";
+
 /**
  * Table component for rendering the contents of the timekeep
  */
@@ -21,6 +23,8 @@ export class TimesheetTable extends DomComponent {
 	timekeep: Store<Timekeep>;
 	/** Access to the timekeep settings */
 	settings: Store<TimekeepSettings>;
+	/** Access to the autocomplete service (optional) */
+	autocomplete: TimekeepAutocomplete | undefined;
 
 	/** Table body for row content */
 	#bodyEl: HTMLElement | undefined;
@@ -32,13 +36,15 @@ export class TimesheetTable extends DomComponent {
 		containerEl: HTMLElement,
 		app: App,
 		timekeep: Store<Timekeep>,
-		settings: Store<TimekeepSettings>
+		settings: Store<TimekeepSettings>,
+		autocomplete?: TimekeepAutocomplete
 	) {
 		super(containerEl);
 
 		this.app = app;
 		this.timekeep = timekeep;
 		this.settings = settings;
+		this.autocomplete = autocomplete;
 	}
 
 	onload(): void {
@@ -138,7 +144,8 @@ export class TimesheetTable extends DomComponent {
 				this.timekeep,
 				this.settings,
 				entry,
-				depth
+				depth,
+				this.autocomplete
 			);
 
 			this.addChild(row);

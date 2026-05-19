@@ -6,7 +6,7 @@ import { isNumberText } from "@/utils/number";
 
 import { TimekeepEntryItemType, TimekeepRegistry } from "./registry";
 
-import { getEntriesNames } from "@/timekeep/queries";
+import { getEntriesNames, getEntriesTags } from "@/timekeep/queries";
 
 /**
  * Autocomplete registry to provide entry name autocomplete based
@@ -19,6 +19,8 @@ export class TimekeepAutocomplete extends Component {
 	settings: Store<TimekeepSettings>;
 	/** The collection of timekeep names */
 	names: Store<string[]>;
+	/** The collection of timekeep tags */
+	tags: Store<string[]>;
 
 	constructor(registry: TimekeepRegistry, settings: Store<TimekeepSettings>) {
 		super();
@@ -27,6 +29,7 @@ export class TimekeepAutocomplete extends Component {
 		this.settings = settings;
 
 		this.names = createStore<string[]>([]);
+		this.tags = createStore<string[]>([]);
 	}
 
 	onload() {
@@ -42,6 +45,7 @@ export class TimekeepAutocomplete extends Component {
 		const settings = this.settings.getState();
 		if (!settings.autocompleteEnabled) {
 			this.names.setState([]);
+			this.tags.setState([]);
 			return;
 		}
 
@@ -54,18 +58,21 @@ export class TimekeepAutocomplete extends Component {
 	private onChangeEntries() {
 		const entries = this.registry.entries.getState();
 		const namesSet = new Set<string>();
+		const tagsSet = new Set<string>();
 
 		for (const entry of entries) {
 			switch (entry.type) {
 				case TimekeepEntryItemType.FILE: {
 					const timekeep = entry.timekeep;
 					getEntriesNames(timekeep.entries, namesSet);
+					getEntriesTags(timekeep.entries, tagsSet);
 					break;
 				}
 
 				case TimekeepEntryItemType.MARKDOWN: {
 					for (const timekeep of entry.timekeeps) {
 						getEntriesNames(timekeep.timekeep.entries, namesSet);
+						getEntriesTags(timekeep.timekeep.entries, tagsSet);
 					}
 					break;
 				}
@@ -84,7 +91,11 @@ export class TimekeepAutocomplete extends Component {
 
 		names.sort();
 
+		const tags = Array.from(tagsSet);
+		tags.sort();
+
 		this.names.setState(names);
+		this.tags.setState(tags);
 	}
 
 	/**

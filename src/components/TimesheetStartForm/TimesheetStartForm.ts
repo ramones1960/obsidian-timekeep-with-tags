@@ -9,6 +9,7 @@ import { parseTagsInput } from "@/utils/tags";
 import { DomComponent } from "@/components/DomComponent";
 import { createObsidianIcon } from "@/components/obsidianIcon";
 import { TimesheetNameInput } from "@/components/TimesheetNameInput";
+import { TimesheetTagsInput } from "@/components/TimesheetTagsInput";
 
 import { getRunningEntry } from "@/timekeep/queries";
 import type { Timekeep } from "@/timekeep/schema";
@@ -31,7 +32,7 @@ export class TimesheetStartForm extends DomComponent {
 	#nameInput: TimesheetNameInput | undefined;
 
 	/** Tags input for starting entries */
-	#tagsInputEl: HTMLInputElement | undefined;
+	#tagsInput: TimesheetTagsInput | undefined;
 
 	/** Warning message element  */
 	#blockPauseWarningEl: HTMLElement | undefined;
@@ -79,15 +80,11 @@ export class TimesheetStartForm extends DomComponent {
 		const tagsWrapperEl = formEl.createDiv({ cls: "timekeep-tags-wrapper" });
 		const tagsLabelEl = tagsWrapperEl.createEl("label", { text: "Tags: " });
 		tagsLabelEl.htmlFor = "timekeepBlockTags";
-		const tagsInputEl = tagsWrapperEl.createEl("input", {
-			cls: "timekeep-input timekeep-tags-input",
-			type: "text",
-			attr: {
-				id: "timekeepBlockTags",
-				placeholder: "tag1, tag2",
-			},
+		const tagsInput = new TimesheetTagsInput(tagsWrapperEl, this.autocomplete, {
+			inputId: "timekeepBlockTags",
 		});
-		this.#tagsInputEl = tagsInputEl;
+		this.addChild(tagsInput);
+		this.#tagsInput = tagsInput;
 
 		const startButton = formEl.createEl("button", {
 			cls: "timekeep-start",
@@ -121,11 +118,11 @@ export class TimesheetStartForm extends DomComponent {
 		event.stopPropagation();
 
 		const nameInput = this.#nameInput;
-		const tagsInputEl = this.#tagsInputEl;
-		assert(nameInput && tagsInputEl, "Name and tags inputs should be defined");
+		const tagsInput = this.#tagsInput;
+		assert(nameInput && tagsInput, "Name and tags inputs should be defined");
 
 		const name = nameInput.getValue();
-		const tags = parseTagsInput(tagsInputEl.value);
+		const tags = parseTagsInput(tagsInput.getValue());
 
 		this.timekeep.setState((timekeep) => {
 			const currentTime = moment();
@@ -133,7 +130,7 @@ export class TimesheetStartForm extends DomComponent {
 
 			// Reset inputs
 			nameInput.resetValue();
-			tagsInputEl.value = "";
+			tagsInput.resetValue();
 
 			return {
 				...timekeep,

@@ -217,6 +217,31 @@ export function getEntriesNames(entries: TimeEntry[], names: Set<string>) {
 }
 
 /**
+ * Collect all unique tags within a collection of entries (including
+ * any nested entries) into the provided set.
+ *
+ * @param entries The entries to scan
+ * @param tags The set to store collected tags in
+ */
+export function getEntriesTags(entries: TimeEntry[], tags: Set<string>) {
+	const stack: TimeEntry[] = [...entries];
+
+	while (stack.length > 0) {
+		const entry: TimeEntry = stack.pop()!;
+
+		if (entry.tags) {
+			for (const tag of entry.tags) {
+				tags.add(tag);
+			}
+		}
+
+		if (entry.subEntries !== null) {
+			stack.push(...entry.subEntries);
+		}
+	}
+}
+
+/**
  * Resolves the effective tags of an entry by combining its own tags
  * with `inheritedTags` from any parent groups. Duplicates are removed
  * while preserving the order: inherited first, own tags appended.

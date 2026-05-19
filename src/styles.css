@@ -459,6 +459,13 @@
 	margin-top: 0.25rem;
 }
 
+/* Container for the tags input + its suggestion popover */
+.timekeep-tags-container {
+	display: flex;
+	flex: 1;
+	position: relative;
+}
+
 .timekeep-tags-input {
 	flex: 1;
 }
