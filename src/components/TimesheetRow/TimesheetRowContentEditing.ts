@@ -44,6 +44,8 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 
 	/** Input for the entry name */
 	#nameInputEl: HTMLInputElement | undefined;
+	/** Input for the entry description */
+	#descriptionInputEl: HTMLTextAreaElement | undefined;
 	/** Input for the start time */
 	#startTimeInputEl: HTMLInputElement | undefined;
 	/** Input for the end time */
@@ -97,6 +99,17 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 		});
 		nameInputEl.name = "name";
 		this.#nameInputEl = nameInputEl;
+
+		const descriptionLabelEl = formEl.createEl("label", {
+			cls: "timekeep-input-label",
+			text: "Description",
+		});
+		const descriptionInputEl = descriptionLabelEl.createEl("textarea", {
+			cls: "timekeep-input timekeep-description-input",
+			attr: { placeholder: "Supports [[wikilinks]] and [text](url)", rows: "2" },
+		});
+		descriptionInputEl.name = "description";
+		this.#descriptionInputEl = descriptionInputEl;
 
 		const startTimeLabelEl = formEl.createEl("label", {
 			text: "Start Time",
@@ -189,6 +202,7 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 	onUpdateState() {
 		assert(
 			this.#nameInputEl &&
+				this.#descriptionInputEl &&
 				this.#startTimeInputEl &&
 				this.#startTimeLabelEl &&
 				this.#endTimeInputEl &&
@@ -201,6 +215,7 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 		const entry = this.entry;
 
 		this.#nameInputEl.value = entry.name;
+		this.#descriptionInputEl.value = entry.description ?? "";
 
 		this.#startTimeLabelEl.hidden = entry.startTime === null;
 		this.#startTimeInputEl.value = entry.startTime
@@ -245,6 +260,7 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 	onSubmit(event: Event) {
 		assert(
 			this.#nameInputEl &&
+				this.#descriptionInputEl &&
 				this.#startTimeInputEl &&
 				this.#endTimeInputEl &&
 				(this.#tagsInput || this.#tagsInputEl),
@@ -255,6 +271,7 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 		event.stopPropagation();
 
 		const name = this.#nameInputEl.value;
+		const description = this.#descriptionInputEl.value.trim();
 		const startTime = this.#startTimeInputEl.value;
 		const endTime = this.#endTimeInputEl.value;
 		const tagsValue = this.#tagsInput
@@ -266,6 +283,11 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 		const entry = this.entry;
 
 		const newEntry: TimeEntry = { ...entry, name };
+		if (description) {
+			newEntry.description = description;
+		} else {
+			delete newEntry.description;
+		}
 		if (tags.length > 0) {
 			newEntry.tags = tags;
 		} else {

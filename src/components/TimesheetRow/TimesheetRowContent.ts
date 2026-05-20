@@ -88,6 +88,12 @@ export class TimesheetRowContent extends ReplaceableComponent {
 		const name = new TimesheetEntryName(nameEl, this.app, entry.name);
 		this.addChild(name);
 
+		if (entry.description) {
+			const descriptionEl = nameColEl.createDiv({ cls: "timekeep-description" });
+			const description = new TimesheetEntryName(descriptionEl, this.app, entry.description);
+			this.addChild(description);
+		}
+
 		if (entry.tags && entry.tags.length > 0) {
 			const tagsContainerEl = nameColEl.createSpan({ cls: "timekeep-tags" });
 			for (const tag of entry.tags) {

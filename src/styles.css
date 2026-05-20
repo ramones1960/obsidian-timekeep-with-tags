@@ -109,6 +109,19 @@
 	overflow-wrap: anywhere;
 }
 
+/* description text shown below the entry name */
+.timekeep-description {
+	font-size: 0.8rem;
+	color: var(--text-muted);
+	margin-top: 0.2rem;
+}
+
+/* textarea for editing the description */
+.timekeep-description-input {
+	resize: vertical;
+	min-height: 2.5rem;
+}
+
 /* column for the timekeep row timestamp */
 .timekeep-col--time {
 	width: 20%;

@@ -30,6 +30,9 @@ const TIME_ENTRY_SINGLE = v.pipe(
 		// Name of the entry
 		name: v.string(),
 
+		// Optional description supporting wikilinks and markdown links
+		description: v.optional(v.string()),
+
 		// Start time for this entry
 		startTime: v.pipe(v.nullable(v.string()), v.transform(strToMoment)),
 
@@ -52,6 +55,8 @@ const TIME_ENTRY_SINGLE = v.pipe(
 // Schema for a time entry with children (Base portion, separate portion is required for recursion)
 const TIME_ENTRY_GROUP_BASE = v.object({
 	name: v.string(),
+	// Optional description supporting wikilinks and markdown links
+	description: v.optional(v.string()),
 	startTime: v.null(),
 	endTime: v.null(),
 	// Optional field to indicate the entry is collapsed
@@ -112,6 +117,11 @@ export function stripEntryRuntimeData(entry: TimeEntry): unknown {
 	// Drop empty tags so they don't pollute the stored JSON
 	if (entryWithoutId.tags !== undefined && entryWithoutId.tags.length === 0) {
 		delete entryWithoutId.tags;
+	}
+
+	// Drop empty description so it doesn't pollute the stored JSON
+	if (entryWithoutId.description !== undefined && entryWithoutId.description === "") {
+		delete entryWithoutId.description;
 	}
 
 	if (entryWithoutId.subEntries !== null) {
