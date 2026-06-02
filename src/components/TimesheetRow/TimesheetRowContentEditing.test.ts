@@ -8,13 +8,15 @@ import { beforeEach, it, describe, Mock, vi, expect, afterEach } from "vitest";
 import type { TimekeepSettings } from "@/settings";
 import type { Store } from "@/store";
 
-import { createMockContainer } from "@/__mocks__/obsidian";
+import { createMockContainer, MockVault } from "@/__mocks__/obsidian";
 import { defaultSettings } from "@/settings";
 import { createStore } from "@/store";
 
 import { TimesheetRowContentEditing } from "./TimesheetRowContentEditing";
 
 import { defaultTimekeep, type TimeEntry, type Timekeep } from "@/timekeep/schema";
+import { TimekeepAutocomplete } from "@/service/autocomplete";
+import { TimekeepRegistry } from "@/service/registry";
 
 describe("TimesheetRowContentEditing", () => {
 	let containerEl: HTMLElement;
@@ -22,6 +24,7 @@ describe("TimesheetRowContentEditing", () => {
 	let timekeep: Store<Timekeep>;
 	let settings: Store<TimekeepSettings>;
 	let onFinishEditing: Mock<() => void>;
+	let autocomplete: TimekeepAutocomplete;
 	let component: TimesheetRowContentEditing;
 
 	beforeEach(() => {
@@ -30,6 +33,10 @@ describe("TimesheetRowContentEditing", () => {
 		timekeep = createStore(defaultTimekeep());
 		settings = createStore(defaultSettings);
 		onFinishEditing = vi.fn();
+
+		const vault = new MockVault();
+		const registry = new TimekeepRegistry(vault.asVault(), settings);
+		autocomplete = new TimekeepAutocomplete(registry, settings);
 	});
 
 	afterEach(() => {
@@ -379,5 +386,97 @@ describe("TimesheetRowContentEditing", () => {
 
 		// Entry should not have changed if the input values were not valid timestamps
 		expect(timekeep.getState()).toEqual({ entries: [entry] });
+	});
+
+	it("should render a TimesheetTagsInput when autocomplete is provided", () => {
+		const entry: TimeEntry = {
+			id: 1,
+			name: "Test",
+			startTime: null,
+			endTime: null,
+			subEntries: null,
+			tags: ["work"],
+		};
+
+		component = new TimesheetRowContentEditing(
+			containerEl,
+			app,
+			timekeep,
+			settings,
+			entry,
+			onFinishEditing,
+			autocomplete
+		);
+		component.load();
+
+		// The autocomplete path wraps the input in a timekeep-tags-container div
+		const tagsContainer = containerEl.querySelector(".timekeep-tags-container");
+		expect(tagsContainer).not.toBeNull();
+	});
+
+	it("onUpdateState should initialise the tags input from the entry tags when autocomplete is provided", () => {
+		const entry: TimeEntry = {
+			id: 1,
+			name: "Test",
+			startTime: null,
+			endTime: null,
+			subEntries: null,
+			tags: ["work", "client"],
+		};
+
+		component = new TimesheetRowContentEditing(
+			containerEl,
+			app,
+			timekeep,
+			settings,
+			entry,
+			onFinishEditing,
+			autocomplete
+		);
+		component.load();
+
+		const tagsInputEl = containerEl.querySelector(
+			".timekeep-tags-container input"
+		) as HTMLInputElement;
+		expect(tagsInputEl).not.toBeNull();
+		expect(tagsInputEl.value).toBe("work client");
+	});
+
+	it("onSubmit should read tags from TimesheetTagsInput when autocomplete is provided", () => {
+		const entry: TimeEntry = {
+			id: 1,
+			name: "Test",
+			startTime: null,
+			endTime: null,
+			subEntries: null,
+		};
+
+		timekeep.setState({ entries: [entry] });
+
+		component = new TimesheetRowContentEditing(
+			containerEl,
+			app,
+			timekeep,
+			settings,
+			entry,
+			onFinishEditing,
+			autocomplete
+		);
+		component.load();
+
+		const tagsInputEl = containerEl.querySelector(
+			".timekeep-tags-container input"
+		) as HTMLInputElement;
+		expect(tagsInputEl).not.toBeNull();
+		tagsInputEl.value = "urgent";
+
+		const form = containerEl.querySelector("form.timekeep-editing");
+		(form as HTMLFormElement).dispatchEvent(
+			new SubmitEvent("submit", { bubbles: true, cancelable: true })
+		);
+
+		expect(onFinishEditing).toHaveBeenCalledOnce();
+		const updatedEntry = timekeep.getState().entries[0];
+		expect(updatedEntry.tags).toEqual(["urgent"]);
 	});
 });

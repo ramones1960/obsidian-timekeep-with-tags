@@ -6,6 +6,7 @@ import {
 	removeEntry,
 	removeSubEntry,
 	setEntryCollapsed,
+	setEntryTags,
 	stopRunningEntries,
 	stopTimekeep,
 } from "./update";
@@ -52,6 +53,53 @@ describe("setEntryCollapsed", () => {
 	});
 });
 
+describe("setEntryTags", () => {
+	it("should set tags on an entry", () => {
+		const entry = { id: 1, name: "Test", startTime: null, endTime: null, subEntries: null };
+		const result = setEntryTags(entry, ["work", "client"]);
+		expect(result.tags).toEqual(["work", "client"]);
+	});
+
+	it("should remove the tags field when given an empty array", () => {
+		const entry = {
+			id: 1,
+			name: "Test",
+			startTime: null,
+			endTime: null,
+			subEntries: null,
+			tags: ["work"],
+		};
+		const result = setEntryTags(entry, []);
+		expect(result.tags).toBeUndefined();
+	});
+
+	it("should remove the tags field when given undefined", () => {
+		const entry = {
+			id: 1,
+			name: "Test",
+			startTime: null,
+			endTime: null,
+			subEntries: null,
+			tags: ["work"],
+		};
+		const result = setEntryTags(entry, undefined);
+		expect(result.tags).toBeUndefined();
+	});
+
+	it("should not mutate the original entry", () => {
+		const entry = {
+			id: 1,
+			name: "Test",
+			startTime: null,
+			endTime: null,
+			subEntries: null,
+			tags: ["original"],
+		};
+		setEntryTags(entry, ["new"]);
+		expect(entry.tags).toEqual(["original"]);
+	});
+});
+
 describe("stopRunningEntries", () => {
 	it("should stop running entries", async () => {
 		const { input, endTime, expected } =
@@ -59,6 +107,13 @@ describe("stopRunningEntries", () => {
 
 		const output = stopRunningEntries(input, endTime);
 		expect(output).toEqual(expected);
+	});
+
+	it("should leave unstarted entries unchanged", async () => {
+		const moment = (await import("moment")).default;
+		const entry = { id: 1, name: "Test", startTime: null, endTime: null, subEntries: null };
+		const output = stopRunningEntries([entry], moment());
+		expect(output[0]).toEqual(entry);
 	});
 });
 

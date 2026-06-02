@@ -254,6 +254,64 @@ describe("getStartTime", () => {
 
 		expect(getStartTime(entry, false)).toEqual(output);
 	});
+
+	it("should return null for a leaf entry with no start time", () => {
+		const entry: TimeEntry = {
+			id: 1,
+			name: "Test",
+			startTime: null,
+			endTime: null,
+			subEntries: null,
+		};
+		expect(getStartTime(entry, true)).toBeNull();
+		expect(getStartTime(entry, false)).toBeNull();
+	});
+
+	it("should pick the newest start time when newest is true", () => {
+		const early = moment("2024-01-01T08:00:00Z");
+		const late = moment("2024-01-01T12:00:00Z");
+		const entry: TimeEntry = {
+			id: 1,
+			name: "Group",
+			startTime: null,
+			endTime: null,
+			subEntries: [
+				{
+					id: 2,
+					name: "A",
+					startTime: moment(early),
+					endTime: null,
+					subEntries: null,
+				},
+				{
+					id: 3,
+					name: "B",
+					startTime: moment(late),
+					endTime: null,
+					subEntries: null,
+				},
+			],
+		};
+		// newest=true returns the minimum start time (earliest) per the algorithm
+		expect(getStartTime(entry, true)?.isSame(early)).toBe(true);
+		// newest=false returns the maximum start time (latest) per the algorithm
+		expect(getStartTime(entry, false)?.isSame(late)).toBe(true);
+	});
+
+	it("should skip sub-entries with null start times", () => {
+		const base = moment("2024-01-01T10:00:00Z");
+		const entry: TimeEntry = {
+			id: 1,
+			name: "Group",
+			startTime: null,
+			endTime: null,
+			subEntries: [
+				{ id: 2, name: "A", startTime: null, endTime: null, subEntries: null },
+				{ id: 3, name: "B", startTime: moment(base), endTime: null, subEntries: null },
+			],
+		};
+		expect(getStartTime(entry, false)?.isSame(base)).toBe(true);
+	});
 });
 
 describe("tag queries", () => {

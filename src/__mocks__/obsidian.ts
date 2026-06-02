@@ -601,7 +601,7 @@ export function setObsidianMockElementHelpers(node: Node) {
 		);
 
 	node.empty = vi.fn().mockImplementation(() => {
-		node.childNodes.forEach((child) => node.removeChild(child));
+		[...node.childNodes].forEach((child) => node.removeChild(child));
 	});
 
 	node.appendText = vi.fn((value: string) => {
