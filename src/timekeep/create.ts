@@ -83,12 +83,46 @@ export function withSubEntry(
 ): TimeEntry {
 	const groupEntry = makeGroupEntry(parent);
 	const entryName = getSubEntryName(name, groupEntry);
-	const newEntry = createEntry(entryName, startTime, tags);
+	// Child blocks are kept untagged: tags are consolidated on the parent
+	// group so tag-based aggregation isn't scattered across sub-entries.
+	const newEntry = createEntry(entryName, startTime);
 
-	return {
+	const mergedTags = mergeTags(groupEntry.tags, tags);
+
+	const updatedGroup: TimeEntryGroup = {
 		...groupEntry,
 		subEntries: [...groupEntry.subEntries, newEntry],
 	};
+
+	if (mergedTags.length > 0) {
+		updatedGroup.tags = mergedTags;
+	} else {
+		delete updatedGroup.tags;
+	}
+
+	return updatedGroup;
+}
+
+/**
+ * Merges two tag lists, removing duplicates while preserving the order
+ * of first appearance.
+ *
+ * @param existing The existing tags (e.g. from the parent group)
+ * @param incoming Additional tags to merge in
+ * @returns The merged unique tag list
+ */
+function mergeTags(existing?: string[], incoming?: string[]): string[] {
+	const seen = new Set<string>();
+	const result: string[] = [];
+
+	for (const tag of [...(existing ?? []), ...(incoming ?? [])]) {
+		if (!seen.has(tag)) {
+			seen.add(tag);
+			result.push(tag);
+		}
+	}
+
+	return result;
 }
 
 /**
@@ -118,6 +152,11 @@ function getSubEntryName(name: string, groupEntry: TimeEntryGroup) {
  * group, the start and end times from the entry will be moved into
  * the group as its first entry titled "Part 1".
  *
+ * Any tags on the original entry are lifted up to the group so that
+ * tags are only ever held by the parent block. This keeps tag-based
+ * time aggregation consolidated on the parent instead of being
+ * scattered across child blocks (Part 1, Part 2, ...).
+ *
  * @param entry The entry to create a group from
  * @returns The group entry
  */
@@ -126,11 +165,21 @@ function makeGroupEntry(entry: TimeEntry): TimeEntryGroup {
 		return entry;
 	}
 
-	return {
+	// Move tags off the child entry and onto the parent group
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars -- intentionally dropping tags from the child
+	const { tags, ...entryWithoutTags } = entry;
+
+	const group: TimeEntryGroup = {
 		id: timekeepId.next(),
 		name: entry.name,
-		subEntries: [{ ...entry, name: "Part 1" }],
+		subEntries: [{ ...entryWithoutTags, name: "Part 1" }],
 		startTime: null,
 		endTime: null,
 	};
+
+	if (tags && tags.length > 0) {
+		group.tags = tags;
+	}
+
+	return group;
 }
