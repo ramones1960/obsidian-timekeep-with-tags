@@ -127,4 +127,48 @@ describe("withSubEntry", () => {
 		const output = withSubEntry(input, "", currentTime);
 		expect(stripEntryRuntimeData(output)).toEqual(stripEntryRuntimeData(expected));
 	});
+
+	it("lifts tags from the single entry up to the parent group", () => {
+		const currentTime = moment();
+		const parent = createEntry("Block 1", currentTime, ["work", "urgent"]);
+
+		const output = withSubEntry(parent, "", currentTime);
+
+		// Tags are held by the parent group only
+		expect(output.tags).toEqual(["work", "urgent"]);
+		// Child blocks (Part 1, Part 2) remain untagged
+		expect(output.subEntries).not.toBeNull();
+		for (const child of output.subEntries!) {
+			expect(child.tags).toBeUndefined();
+		}
+	});
+
+	it("does not tag new child blocks, merging incoming tags onto the parent", () => {
+		const currentTime = moment();
+		const parent = createEntry("Block 1", currentTime, ["work"]);
+
+		const output = withSubEntry(parent, "", currentTime, ["urgent"]);
+
+		expect(output.tags).toEqual(["work", "urgent"]);
+		expect(output.subEntries).not.toBeNull();
+		for (const child of output.subEntries!) {
+			expect(child.tags).toBeUndefined();
+		}
+	});
+
+	it("keeps an existing group's tags consolidated when extending it", () => {
+		const currentTime = moment();
+		// First press converts the single entry into a tagged group
+		const group = withSubEntry(createEntry("Block 1", currentTime, ["work"]), "", currentTime);
+
+		// Second press extends the group without duplicating or scattering tags
+		const output = withSubEntry(group, "", currentTime);
+
+		expect(output.tags).toEqual(["work"]);
+		expect(output.subEntries).not.toBeNull();
+		expect(output.subEntries!).toHaveLength(3);
+		for (const child of output.subEntries!) {
+			expect(child.tags).toBeUndefined();
+		}
+	});
 });
