@@ -183,6 +183,20 @@ describe("withSubEntry", () => {
 		}
 	});
 
+	it("keeps the description on the original record when converting to a group", () => {
+		const currentTime = moment();
+		const parent = createEntry("Block 1", currentTime, undefined, "Investigated the bug");
+
+		const output = withSubEntry(parent, "", currentTime);
+
+		// The description stays with the original recording (now "Part 1"),
+		// it is not lifted onto the parent group like tags are.
+		expect(output.description).toBeUndefined();
+		expect(output.subEntries).not.toBeNull();
+		expect(output.subEntries![0].name).toBe("Part 1");
+		expect(output.subEntries![0].description).toBe("Investigated the bug");
+	});
+
 	it("keeps an existing group's tags consolidated when extending it", () => {
 		const currentTime = moment();
 		// First press converts the single entry into a tagged group

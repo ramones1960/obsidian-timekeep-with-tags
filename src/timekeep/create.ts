@@ -175,7 +175,10 @@ function makeGroupEntry(entry: TimeEntry): TimeEntryGroup {
 		return entry;
 	}
 
-	// Move tags off the child entry and onto the parent group
+	// Move tags off the child entry and onto the parent group.
+	// The description is intentionally left on the child: unlike tags (which
+	// are consolidated on the parent for aggregation) a description is a note
+	// about a single recording, so it stays with that record as "Part 1".
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars -- intentionally dropping tags from the child
 	const { tags, ...entryWithoutTags } = entry;
 

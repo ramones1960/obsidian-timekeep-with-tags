@@ -37,6 +37,11 @@ export class TimesheetPresetBar extends DomComponent {
 		wrapperEl.setAttribute("data-area", "presets");
 		this.wrapperEl = wrapperEl;
 
+		// A single delegated click listener is registered once on the stable
+		// wrapper so rebuilding the buttons in render() doesn't accumulate
+		// listeners over the lifetime of the component.
+		this.registerDomEvent(wrapperEl, "click", this.onClick.bind(this));
+
 		const onUpdate = this.render.bind(this);
 		this.register(this.settings.subscribe(onUpdate));
 		onUpdate();
@@ -63,15 +68,30 @@ export class TimesheetPresetBar extends DomComponent {
 				text: label,
 				attr: { type: "button" },
 			});
+			buttonEl.setAttribute("data-preset-id", preset.id);
 
 			if (preset.tags.length > 0) {
 				buttonEl.title = `${preset.name} (${preset.tags.map((tag) => `#${tag}`).join(" ")})`;
 			} else {
 				buttonEl.title = preset.name;
 			}
-
-			this.registerDomEvent(buttonEl, "click", () => this.onStartPreset(preset));
 		}
+	}
+
+	onClick(event: MouseEvent): void {
+		const target = event.target;
+		if (!(target instanceof HTMLElement)) return;
+
+		const buttonEl = target.closest(".timekeep-preset");
+		if (!(buttonEl instanceof HTMLElement)) return;
+
+		const presetId = buttonEl.getAttribute("data-preset-id");
+		if (presetId === null) return;
+
+		const preset = this.settings.getState().presets.find((p) => p.id === presetId);
+		if (preset === undefined) return;
+
+		this.onStartPreset(preset);
 	}
 
 	onStartPreset(preset: TimekeepPreset): void {
