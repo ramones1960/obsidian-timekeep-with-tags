@@ -3,17 +3,17 @@
 
 </h1>
 
-<center><p>Obsidian plugin for time tracking</p></center>
+<center><p>Obsidianプラグイン - 時間管理・記録</p></center>
 
 ![License](https://img.shields.io/github/license/jacobtread/obsidian-timekeep?style=for-the-badge)
 ![Build](https://img.shields.io/github/actions/workflow/status/jacobtread/obsidian-timekeep/build.yml?style=for-the-badge)
 ![Tests](https://img.shields.io/github/actions/workflow/status/jacobtread/obsidian-timekeep/tests.yml?style=for-the-badge&label=Tests)
 
-This plugin provides a simple and easy way to track time spent on various tasks. After tracking your time, you can export the tracked time as a **Markdown Table**, **CSV**, **JSON**, or **PDF**.
+このプラグインは、様々なタスクに費やした時間を簡単に記録・管理できます。記録した時間は **Markdownテーブル**、**CSV**、**JSON**、または **PDF** 形式でエクスポートできます。
 
-![Tracker](images/tracker.png)
+![トラッカー](images/tracker.png)
 
-This plugin provides a command for inserting time trackers: `Timekeep: Insert Tracker`. Alternatively, a timekeep can be created by creating a codeblock like the following:
+このプラグインには、時間トラッカーを挿入するコマンドが用意されています: `Timekeep: Insert Tracker`。または、以下のようなコードブロックを作成してタイムキープを作ることもできます:
 
 ````
 ```timekeep
@@ -21,46 +21,46 @@ This plugin provides a command for inserting time trackers: `Timekeep: Insert Tr
 ```
 ````
 
-## 🏷️ Tags
+## 🏷️ タグ
 
-You can attach tags to a time entry to categorize work (similar to Toggl Track). Tags are entered in the dedicated **Tags** field in the start form (and in the edit form for existing entries). Comma or space separated, with or without a leading `#`:
+タグを時間エントリに付与して作業を分類できます（Toggl Trackに似た機能）。タグは開始フォームの専用 **タグ** フィールドに入力します（既存エントリの編集フォームでも設定可能）。カンマまたはスペース区切りで、`#` を付けても付けなくても構いません:
 
 ```
 project-x, urgent
 #project-x #urgent
 ```
 
-Tags applied to a **group** entry are inherited by every sub-entry during aggregation, so you can tag once at the project level and still get per-sub-entry totals attributed to it.
+**グループ**エントリに付与したタグは、集計時にすべてのサブエントリに継承されます。プロジェクトレベルで一度タグを設定するだけで、各サブエントリの時間も正しく集計されます。
 
-Tags also appear as a `Tags` column in all export formats (Markdown, CSV, PDF, JSON).
+タグはすべてのエクスポート形式（Markdown、CSV、PDF、JSON）に `Tags` 列として表示されます。
 
-## ⚡ Presets
+## ⚡ プリセット
 
-To avoid typing the same block name and tags every time, you can define **presets** — named combinations of a block name and a set of tags. Presets are configured in the plugin settings (under the **Presets** heading) where you can add, edit, reorder and remove them.
+毎回同じブロック名とタグを入力する手間を省くために、**プリセット**を定義できます。プリセットはブロック名とタグセットの組み合わせに名前を付けたものです。プラグイン設定の **プリセット** セクションで追加・編集・並べ替え・削除ができます。
 
-Each preset appears as a button in a quick-start bar above the start form. Clicking a preset immediately starts a new entry using the preset's block name and tags (pausing any currently running timer), so a single click is all it takes to start tracking common work.
+各プリセットは開始フォームの上にあるクイックスタートバーにボタンとして表示されます。プリセットをクリックすると、設定されたブロック名とタグで即座に新しいエントリが開始されます（現在実行中のタイマーは一時停止）。よく使う作業はワンクリックで記録を開始できます。
 
-Because a preset's recorded entry is an ordinary entry carrying the configured name and tags, preset time is aggregated by the existing tag aggregation just like any other entry. The quick-start bar can be hidden with the **Show preset bar** toggle in settings.
+プリセットで記録されたエントリは、設定された名前とタグを持つ通常のエントリです。そのため、既存のタグ集計機能で他のエントリと同様に集計されます。クイックスタートバーは設定の **プリセットバーを表示** トグルで非表示にできます。
 
-## 🗒️ Descriptions
+## 🗒️ 説明
 
-Each time entry can carry an optional **description** to record what was actually worked on for that block. A description can be entered when starting a timer (the **Description** field in the start form) and edited at any time afterwards from the entry's edit form.
+各時間エントリには、そのブロックで実際に行った作業内容を記録するためのオプションの **説明** を追加できます。説明はタイマー開始時（開始フォームの **説明** フィールド）に入力でき、後からエントリの編集フォームで変更することもできます。
 
-Descriptions are shown beneath the entry name in the table, appear as a `Description` column in the Markdown, CSV and PDF exports, and are stored on the entry in the JSON (so they are available to `dataviewjs` via `entry.description`). Descriptions are notes only — they are not used as an aggregation key.
+説明はテーブル内のエントリ名の下に表示され、Markdown・CSV・PDFエクスポートでは `Description` 列として出力されます。またJSONにも保存されるため、`dataviewjs` で `entry.description` としてアクセスできます。説明はメモ用途であり、集計のキーとしては使用されません。
 
-## ✏️ Editing & Deleting
+## ✏️ 編集と削除
 
-If you accidentally gave a block an incorrect name or started the timer late, you can use the editing feature to update the stored data or delete the entry.
+ブロック名を間違えたり、タイマーの開始時刻が遅れたりした場合は、編集機能を使って保存済みのデータを更新したり、エントリを削除したりできます。
 
-![Editing](images/editing.png)
+![編集](images/editing.png)
 
-## 👀 How it's stored
+## 👀 データの保存方法
 
-This plugin is heavily inspired by [ObsidianSimpleTimeTracker](https://github.com/Ellpeck/ObsidianSimpleTimeTracker) (semi backwards compatible; some simple-time-tracker blocks can be renamed to timekeep), the data for time tracking is stored as JSON within the `timekeep` code block.
+このプラグインは [ObsidianSimpleTimeTracker](https://github.com/Ellpeck/ObsidianSimpleTimeTracker) に大きなインスピレーションを受けています（ある程度の後方互換性あり。一部の simple-time-tracker ブロックは timekeep にリネームすることで利用可能）。時間記録のデータは `timekeep` コードブロック内にJSONとして保存されます。
 
-The time block start and stop times are stored as timestamps, making it possible for you to start your time tracker, then close Obsidian and have the tracking continue when you open it again.
+タイムブロックの開始・終了時刻はタイムスタンプとして保存されるため、タイムトラッカーを開始してからObsidianを閉じても、次回起動時に記録が継続されます。
 
-Below is an example of how this is stored:
+保存形式の例:
 
 ```json
 {
@@ -75,11 +75,11 @@ Below is an example of how this is stored:
 }
 ```
 
-## 📝 Export Formats
+## 📝 エクスポート形式
 
-Below are the various formats that timekeeping data can be exported to:
+以下は、タイムキープデータをエクスポートできる各形式です:
 
-### Markdown Table
+### Markdownテーブル
 
 | Block              | Start time        | End time          | Duration |
 | ------------------ | ----------------- | ----------------- | -------- |
@@ -101,75 +101,74 @@ Example Time Block,24-03-17 19:32:36,24-03-17 19:32:37,0s
 ```
 
 > [!NOTE]
-> In the plugin settings, you can choose to omit the first line of the CSV containing the column names:
+> プラグイン設定で、列名を含む最初の行をCSVから省略するかどうかを選択できます。
 
 ### JSON
 
-The JSON export format simply copies the JSON stored inside the timekeep:
+JSONエクスポートは、timekeep内に保存されているJSONをそのままコピーします:
 
 ```json
 {"entries":[{"name":"Example Time Block","startTime":"2024-03-17T06:32:36.118Z","endTime":"2024-03-17T06:32:37.012Z","subEntries":null}]}
 ```
 
-### Generated PDFs
+### 生成PDF
 
-Below is an example of a PDF generated by Timekeep. These PDFs are generated using pdfmake locally.
+以下はTimekeepで生成されたPDFの例です。これらのPDFはpdfmakeを使用してローカルで生成されます。
 
-![Generated PDF](images/pdf.png)
+![生成PDF](images/pdf.png)
 
-## 🔣 Using with templates
+## 🔣 テンプレートとの併用
 
-If you would like to create a timekeep through a template plugin, you can do so by using the JSON for a timekeep directly.
+テンプレートプラグインを通じてタイムキープを作成したい場合は、タイムキープのJSONを直接使用することができます。
 
-If you have frequently used entry names you can define them in your template by specifying `null` for both the `startTime` and `endTime`:
+よく使うエントリ名がある場合は、`startTime` と `endTime` の両方に `null` を指定してテンプレートに定義しておけます:
 
 ```json
-{"entries":[{"name":"Example Time Block","startTime":"2024-03-17T06:32:36.118Z","endTime":"2024-03-17T06:32:37.012Z","subEntries":null}]}
+{"entries":[{"name":"Example Time Block","startTime":null,"endTime":null,"subEntries":null}]}
 ```
 
-This will create an entry that is not yet started; you can start it by clicking the play button without having to type out the name.
+これにより、未開始状態のエントリが作成されます。名前を入力せずに再生ボタンをクリックするだけで開始できます。
 
-## 👀 Status Bar Icons
+## 👀 ステータスバーアイコン
 
-Timekeep will show running timers in the Obsidian status bar, allowing you to see whats happening at a glance, you can then quickly open the file or stop the timer
-right from the status bar.
+Timekeepは実行中のタイマーをObsidianのステータスバーに表示します。一目で状況を把握でき、ステータスバーから直接ファイルを開いたりタイマーを停止したりできます。
 
-![Status Bar](images/status_bar.png)
+![ステータスバー](images/status_bar.png)
 
-*Status bar icons are only available if the registry setting is enabled as well as the status bar setting 
+*ステータスバーアイコンはレジストリ設定とステータスバー設定の両方が有効な場合のみ利用できます。*
 
 ## 🦾 API
 
-Timekeep exposes a JS API which can be used by other scripts such as with [Dataview](https://blacksmithgu.github.io/obsidian-dataview/api/intro/)
+TimekeepはJavaScript APIを公開しており、[Dataview](https://blacksmithgu.github.io/obsidian-dataview/api/intro/) などの他のスクリプトから利用できます。
 
-You can access the plugin API through:
+プラグインAPIへのアクセス方法:
 
 ```js
-// Get the timekeep plugin API
+// タイムキーププラグインAPIを取得
 const timekeepPlugin = this.app.plugins.plugins.timekeep.api;
 
-// Extract the timekeeps from the file text
+// ファイルテキストからタイムキープを抽出
 const timekeeps = timekeepPlugin.parser.extractTimekeepCodeblocks(text);
 ```
 
-Below is a Dataview example for showing the total elapsed time for all timekeeps in the current file:
+以下は、現在のファイル内のすべてのタイムキープの合計経過時間を表示するDataviewの例です:
 
 ````
 ```dataviewjs
-// Get the currently open file
+// 現在開いているファイルを取得
 const activeFile = this.app.workspace.getActiveFile();
 if(!activeFile || !activeFile.name) return;
 
-// Read the file
+// ファイルを読み込む
 const text = await this.app.vault.read(activeFile);
 
-// Get the timekeep plugin API
+// タイムキーププラグインAPIを取得
 const timekeepPlugin = this.app.plugins.plugins.timekeep.api;
 
-// Extract the timekeeps from the file text
+// ファイルテキストからタイムキープを抽出
 const timekeeps = timekeepPlugin.parser.extractTimekeepCodeblocks(text);
 
-// Current time is required for unfinished entries
+// 未終了エントリには現在時刻が必要
 const currentTime = moment();
 
 let totalRunningDuration = 0;
@@ -178,14 +177,14 @@ for (const timekeep of timekeeps) {
   totalRunningDuration += timekeepPlugin.queries.getTotalDuration(timekeep.entries, currentTime);
 }
 
-// Total running duration is in milliseconds
+// 合計実行時間はミリ秒単位
 dv.span(totalRunningDuration);
 ```
 ````
 
-### Aggregating time by tag
+### タグ別の時間集計
 
-Tags can be aggregated across all timekeeps in a file (or across the whole vault) with `queries.getDurationByTag`. Parent-group tags are inherited by their sub-entries, so a tag set on the group is automatically attributed to every leaf entry beneath it.
+`queries.getDurationByTag` を使って、ファイル内（またはVault全体）のすべてのタイムキープをタグ別に集計できます。親グループのタグはサブエントリに継承されるため、グループに設定したタグはその下のすべてのリーフエントリに自動的に反映されます。
 
 ````
 ```dataviewjs
@@ -206,7 +205,7 @@ for (const timekeep of timekeeps) {
   }
 }
 
-// Drop the empty-string key holding untagged time, if you don't want to display it
+// タグなし時間を表示したくない場合は空文字列キーを削除
 delete totals[""];
 
 const rows = Object.entries(totals)
@@ -220,7 +219,7 @@ dv.table(["Tag", "Duration"], rows);
 ```
 ````
 
-To aggregate by tag across **every** timekeep in your vault, swap the `extractTimekeepCodeblocks` step for `getTimekeepsWithinVault`. Registry entries come in two shapes — `.timekeep` for dedicated `.timekeep` files, and `.timekeeps[]` for codeblocks inside markdown files — so iterate both:
+Vault内の**すべての**タイムキープをタグ別に集計するには、`extractTimekeepCodeblocks` の代わりに `getTimekeepsWithinVault` を使用します。レジストリエントリには2種類の形式があります — 専用の `.timekeep` ファイル用の `.timekeep` と、Markdownファイル内のコードブロック用の `.timekeeps[]` — のでそれぞれを反復処理します:
 
 ````
 ```dataviewjs
@@ -257,16 +256,16 @@ dv.table(["Tag", "Duration"], rows);
 ```
 ````
 
-## Known issues
+## 既知の問題
 
-### Jumpy rendering behavior on modification
+### 変更時の描画のちらつき
 
-If your lists become longer you will likely see some jumpy/flickery behavior with timekeep when making modifications (add/save/delete/collapse/expand), this is a limitation of how Obsidian re-renders the app.
+リストが長くなると、変更時（追加・保存・削除・折りたたみ・展開）にTimekeepの描画がちらつく場合があります。これはObsidianのアプリ再レンダリング方法に起因する制限です。
 
-Because Obsidian re-creates the entire app when the code block changes (Since the timekeep data is stored in the codeblock, modifications cause this to happen. Thus the DOM is thrown away causing a full re-render). This issue also means local state will all be lost on modification (This is why the collapsed state must be persisted to the timekeep.)
+コードブロックが変更されるとObsidianはアプリ全体を再作成します（タイムキープデータはコードブロックに保存されているため、変更のたびにこれが発生します。DOMが破棄されて完全な再レンダリングが行われます）。この問題により、変更時にローカルの状態もすべて失われます（折りたたみ状態をタイムキープに永続化しなければならない理由もここにあります）。
 
-I do not believe this can be fixed but PRs are welcome if you are aware of a way to fix this.
+この問題は修正できないと考えていますが、修正方法をご存知の方はPRを歓迎します。
 
-## 📄 License
+## 📄 ライセンス
 
-This project is licensed under the [MIT License](./LICENSE.md)
+このプロジェクトは [MITライセンス](./LICENSE.md) の下でライセンスされています。
