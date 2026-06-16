@@ -34,6 +34,9 @@ export class TimesheetStartForm extends DomComponent {
 	/** Tags input for starting entries */
 	#tagsInput: TimesheetTagsInput | undefined;
 
+	/** Description input for starting entries */
+	#descriptionInput: HTMLTextAreaElement | undefined;
+
 	/** Warning message element  */
 	#blockPauseWarningEl: HTMLElement | undefined;
 	/** Start button element */
@@ -86,6 +89,24 @@ export class TimesheetStartForm extends DomComponent {
 		this.addChild(tagsInput);
 		this.#tagsInput = tagsInput;
 
+		const descriptionWrapperEl = formEl.createDiv({
+			cls: "timekeep-description-wrapper",
+		});
+		const descriptionLabelEl = descriptionWrapperEl.createEl("label", {
+			text: "Description: ",
+		});
+		descriptionLabelEl.htmlFor = "timekeepBlockDescription";
+		const descriptionInput = descriptionWrapperEl.createEl("textarea", {
+			cls: "timekeep-input timekeep-description-input",
+			attr: {
+				placeholder: "What are you working on?",
+				rows: "2",
+			},
+		});
+		descriptionInput.id = "timekeepBlockDescription";
+		descriptionInput.name = "description";
+		this.#descriptionInput = descriptionInput;
+
 		const startButton = formEl.createEl("button", {
 			cls: "timekeep-start",
 			title: "Start",
@@ -119,18 +140,24 @@ export class TimesheetStartForm extends DomComponent {
 
 		const nameInput = this.#nameInput;
 		const tagsInput = this.#tagsInput;
-		assert(nameInput && tagsInput, "Name and tags inputs should be defined");
+		const descriptionInput = this.#descriptionInput;
+		assert(
+			nameInput && tagsInput && descriptionInput,
+			"Name, tags and description inputs should be defined"
+		);
 
 		const name = nameInput.getValue();
 		const tags = parseTagsInput(tagsInput.getValue());
+		const description = descriptionInput.value.trim();
 
 		this.timekeep.setState((timekeep) => {
 			const currentTime = moment();
-			const entries = startNewEntry(name, currentTime, timekeep.entries, tags);
+			const entries = startNewEntry(name, currentTime, timekeep.entries, tags, description);
 
 			// Reset inputs
 			nameInput.resetValue();
 			tagsInput.resetValue();
+			descriptionInput.value = "";
 
 			return {
 				...timekeep,

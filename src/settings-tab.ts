@@ -9,9 +9,12 @@ import {
 	DurationFormat,
 	UnstartedOrder,
 	defaultSettings,
+	TimekeepPreset,
 	TimekeepSettings,
 	PdfExportBehavior,
 } from "@/settings";
+
+import { PresetModal } from "@/modals/PresetModal";
 
 export class TimekeepSettingsTab extends PluginSettingTab {
 	settingsStore: Store<TimekeepSettings>;
@@ -153,6 +156,8 @@ export class TimekeepSettingsTab extends PluginSettingTab {
 					}));
 				});
 			});
+
+		this.displayPresets(settings.presets);
 
 		// General Export settings section
 		new Setting(this.containerEl).setName("Export").setHeading();
@@ -491,5 +496,145 @@ export class TimekeepSettingsTab extends PluginSettingTab {
 					}));
 				});
 			});
+	}
+
+	/**
+	 * Render the presets management section of the settings tab.
+	 *
+	 * @param presets The currently configured presets
+	 */
+	displayPresets(presets: TimekeepPreset[]): void {
+		new Setting(this.containerEl)
+			.setName("Presets")
+			.setDesc(
+				"Predefined block name and tag combinations that can be started with a single click from the timesheet"
+			)
+			.setHeading();
+
+		new Setting(this.containerEl)
+			.setName("Show preset bar")
+			.setDesc("Whether to show the quick-start preset buttons above the start form")
+			.addToggle((t) => {
+				const settings = this.settingsStore.getState();
+				t.setValue(settings.presetsEnabled);
+				t.onChange((v) => {
+					this.settingsStore.setState((currentValue) => ({
+						...currentValue,
+						presetsEnabled: v,
+					}));
+				});
+			});
+
+		for (let index = 0; index < presets.length; index += 1) {
+			const preset = presets[index];
+			const label = preset.label.length > 0 ? preset.label : preset.name;
+			const tagsDesc =
+				preset.tags.length > 0 ? preset.tags.map((tag) => `#${tag}`).join(" ") : "No tags";
+
+			const setting = new Setting(this.containerEl)
+				.setName(label)
+				.setDesc(`${preset.name} — ${tagsDesc}`);
+
+			if (index > 0) {
+				setting.addExtraButton((btn) => {
+					btn.setIcon("arrow-up")
+						.setTooltip("Move up")
+						.onClick(() => this.movePreset(index, index - 1));
+				});
+			}
+
+			if (index < presets.length - 1) {
+				setting.addExtraButton((btn) => {
+					btn.setIcon("arrow-down")
+						.setTooltip("Move down")
+						.onClick(() => this.movePreset(index, index + 1));
+				});
+			}
+
+			setting.addExtraButton((btn) => {
+				btn.setIcon("pencil")
+					.setTooltip("Edit")
+					.onClick(() => {
+						new PresetModal(this.app, preset, (updated) =>
+							this.upsertPreset(updated)
+						).open();
+					});
+			});
+
+			setting.addExtraButton((btn) => {
+				btn.setIcon("trash")
+					.setTooltip("Delete")
+					.onClick(() => this.removePreset(preset.id));
+			});
+		}
+
+		new Setting(this.containerEl).addButton((btn) => {
+			btn.setButtonText("Add preset")
+				.setCta()
+				.onClick(() => {
+					new PresetModal(this.app, undefined, (preset) =>
+						this.upsertPreset(preset)
+					).open();
+				});
+		});
+	}
+
+	/**
+	 * Insert or update a preset by id, then refresh the settings tab.
+	 *
+	 * @param preset The preset to insert or update
+	 */
+	upsertPreset(preset: TimekeepPreset): void {
+		this.settingsStore.setState((currentValue) => {
+			const existingIndex = currentValue.presets.findIndex((p) => p.id === preset.id);
+			const presets = [...currentValue.presets];
+
+			if (existingIndex === -1) {
+				presets.push(preset);
+			} else {
+				presets[existingIndex] = preset;
+			}
+
+			return { ...currentValue, presets };
+		});
+
+		this.display();
+	}
+
+	/**
+	 * Remove a preset by id, then refresh the settings tab.
+	 *
+	 * @param id The id of the preset to remove
+	 */
+	removePreset(id: string): void {
+		this.settingsStore.setState((currentValue) => ({
+			...currentValue,
+			presets: currentValue.presets.filter((preset) => preset.id !== id),
+		}));
+
+		this.display();
+	}
+
+	/**
+	 * Move a preset from one index to another, then refresh the settings tab.
+	 *
+	 * @param from The current index of the preset
+	 * @param to The target index of the preset
+	 */
+	movePreset(from: number, to: number): void {
+		this.settingsStore.setState((currentValue) => {
+			const presets = [...currentValue.presets];
+
+			if (from < 0 || from >= presets.length || to < 0 || to >= presets.length) {
+				return currentValue;
+			}
+
+			const [moved] = presets.splice(from, 1);
+			presets.splice(to, 0, moved);
+
+			return { ...currentValue, presets };
+		});
+
+		this.display();
 	}
 }

@@ -10,9 +10,9 @@ import { getEntriesSorted } from "@/timekeep/sort";
 export { createCSV } from "./csv";
 export { createMarkdownTable } from "./markdown-table";
 
-export type RawTableRow = [string, string, string, string, string];
+export type RawTableRow = [string, string, string, string, string, string];
 
-export const TOTAL_COLUMNS = 5;
+export const TOTAL_COLUMNS = 6;
 
 /**
  * Flattens the nested timekeeping structure into a flat
@@ -61,6 +61,8 @@ function createRawTableEntries(
 			formatDuration(settings.exportDurationFormat, getEntryDuration(entry, currentTime)),
 			// Tags (effective: own + inherited from parent groups)
 			effectiveTags.join(", "),
+			// Description note for the entry
+			entry.description ?? "",
 		],
 	];
 

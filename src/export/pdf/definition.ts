@@ -157,7 +157,7 @@ function createPdfTable(
 	return {
 		table: {
 			headerRows: 1,
-			widths: ["*", 70, 70, 50, 80],
+			widths: ["*", 65, 65, 45, 70, "*"],
 			body: [
 				[
 					{
@@ -187,6 +187,12 @@ function createPdfTable(
 						text: "Tags",
 						style: ["tableCell", "tableCellHeader"],
 						alignment: "left",
+						border: [false, false, false, true],
+					},
+					{
+						text: "Description",
+						style: ["tableCell", "tableCellHeader"],
+						alignment: "left",
 						border: [false, false, true, true],
 					},
 				],
@@ -201,6 +207,7 @@ function createPdfTable(
 						bold: true,
 						alignment: "right",
 					},
+					{ text: "", style: "tableCell" },
 					{ text: "", style: "tableCell" },
 				],
 			],
@@ -378,6 +385,12 @@ function createTableEntryCells(
 		},
 		{
 			text: effectiveTags.join(", "),
+			style: ["tableCell"],
+			alignment: "left",
+			border: [false, false, false, true],
+		},
+		{
+			text: entry.description ?? "",
 			style: ["tableCell"],
 			alignment: "left",
 			border: [false, false, true, true],

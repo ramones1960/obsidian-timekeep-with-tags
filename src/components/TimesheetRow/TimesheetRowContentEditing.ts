@@ -52,6 +52,8 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 	#tagsInput: TimesheetTagsInput | undefined;
 	/** Fallback plain input when autocomplete is not provided */
 	#tagsInputEl: HTMLInputElement | undefined;
+	/** Input for the entry description */
+	#descriptionInputEl: HTMLTextAreaElement | undefined;
 
 	/** Callback for editing finished / cancelled */
 	onFinishEditing: VoidFunction;
@@ -143,6 +145,20 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 			this.#tagsInputEl = tagsInputEl;
 		}
 
+		const descriptionLabelEl = formEl.createEl("label", {
+			cls: "timekeep-input-label",
+			text: "Description",
+		});
+		const descriptionInputEl = descriptionLabelEl.createEl("textarea", {
+			cls: "timekeep-input timekeep-description-input",
+			attr: {
+				placeholder: "What was worked on?",
+				rows: "2",
+			},
+		});
+		descriptionInputEl.name = "description";
+		this.#descriptionInputEl = descriptionInputEl;
+
 		const actionsEl = formEl.createDiv({
 			cls: "timekeep-editing-actions",
 		});
@@ -193,6 +209,7 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 				this.#startTimeLabelEl &&
 				this.#endTimeInputEl &&
 				this.#endTimeLabelEl &&
+				this.#descriptionInputEl &&
 				(this.#tagsInput || this.#tagsInputEl),
 			"Elements expected to be defined"
 		);
@@ -218,6 +235,8 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 		} else if (this.#tagsInputEl) {
 			this.#tagsInputEl.value = tagsValue;
 		}
+
+		this.#descriptionInputEl.value = entry.description ?? "";
 	}
 
 	onConfirmDelete() {
@@ -247,6 +266,7 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 			this.#nameInputEl &&
 				this.#startTimeInputEl &&
 				this.#endTimeInputEl &&
+				this.#descriptionInputEl &&
 				(this.#tagsInput || this.#tagsInputEl),
 			"Expected inputs to be defined"
 		);
@@ -261,6 +281,7 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 			? this.#tagsInput.getValue()
 			: (this.#tagsInputEl?.value ?? "");
 		const tags = parseTagsInput(tagsValue);
+		const description = this.#descriptionInputEl.value.trim();
 
 		const settings = this.settings.getState();
 		const entry = this.entry;
@@ -270,6 +291,12 @@ export class TimesheetRowContentEditing extends ReplaceableComponent {
 			newEntry.tags = tags;
 		} else {
 			delete newEntry.tags;
+		}
+
+		if (description.length > 0) {
+			newEntry.description = description;
+		} else {
+			delete newEntry.description;
 		}
 
 		// Update the start and end times for non groups

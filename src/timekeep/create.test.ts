@@ -44,6 +44,26 @@ describe("createEntry", () => {
 
 		expect(entry.tags).toBeUndefined();
 	});
+
+	it("attaches a description when provided", () => {
+		const currentTime = moment();
+		const entry = createEntry("Block", currentTime, undefined, "Wrote the report");
+
+		expect(stripEntryRuntimeData(entry)).toStrictEqual({
+			name: "Block",
+			startTime: currentTime,
+			endTime: null,
+			subEntries: null,
+			description: "Wrote the report",
+		});
+	});
+
+	it("does not attach an empty description", () => {
+		const currentTime = moment();
+		const entry = createEntry("Block", currentTime, undefined, "");
+
+		expect(entry.description).toBeUndefined();
+	});
 });
 
 describe("withEntry", () => {
@@ -79,6 +99,13 @@ describe("withEntry", () => {
 		const output = withEntry([], "Tagged", currentTime, ["project-x"]);
 
 		expect(output[0].tags).toEqual(["project-x"]);
+	});
+
+	it("propagates the description to the new entry", () => {
+		const currentTime = moment();
+		const output = withEntry([], "Described", currentTime, undefined, "Initial setup");
+
+		expect(output[0].description).toEqual("Initial setup");
 	});
 });
 
