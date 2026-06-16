@@ -23,9 +23,13 @@ export class TimesheetRunningEntryEditing extends ReplaceableComponent {
 
 	/** Name editing input element */
 	#nameInputEl: HTMLInputElement | undefined;
+	/** Description editing input element */
+	#descriptionInputEl: HTMLTextAreaElement | undefined;
 
 	/** Default value for the name being edited */
 	#editingName: string;
+	/** Default value for the description being edited */
+	#editingDescription: string;
 
 	/** Callback for when editing is finished */
 	onFinishEditing: VoidFunction;
@@ -37,6 +41,7 @@ export class TimesheetRunningEntryEditing extends ReplaceableComponent {
 		settings: Store<TimekeepSettings>,
 
 		editingName: string,
+		editingDescription: string,
 		onFinishEditing: VoidFunction
 	) {
 		super(containerEl);
@@ -45,6 +50,7 @@ export class TimesheetRunningEntryEditing extends ReplaceableComponent {
 		this.settings = settings;
 
 		this.#editingName = editingName;
+		this.#editingDescription = editingDescription;
 		this.onFinishEditing = onFinishEditing;
 	}
 
@@ -78,6 +84,24 @@ export class TimesheetRunningEntryEditing extends ReplaceableComponent {
 		nameInputEl.id = "timekeepBlockName";
 		this.#nameInputEl = nameInputEl;
 
+		const descriptionWrapperEl = formEl.createDiv({
+			cls: "timekeep-description-wrapper",
+		});
+		const descriptionLabelEl = descriptionWrapperEl.createEl("label", {
+			text: "Edit Description:",
+		});
+		descriptionLabelEl.htmlFor = "timekeepBlockDescription";
+		const descriptionInputEl = descriptionWrapperEl.createEl("textarea", {
+			cls: "timekeep-input timekeep-description-input",
+			attr: {
+				placeholder: "What are you working on?",
+				rows: "2",
+			},
+		});
+		descriptionInputEl.id = "timekeepBlockDescription";
+		descriptionInputEl.value = this.#editingDescription;
+		this.#descriptionInputEl = descriptionInputEl;
+
 		const saveButton = formEl.createEl("button", {
 			cls: ["timekeep-start", "timekeep-start--save"],
 			title: "Save",
@@ -100,7 +124,11 @@ export class TimesheetRunningEntryEditing extends ReplaceableComponent {
 		event.stopPropagation();
 
 		const nameInputEl = this.#nameInputEl;
-		assert(nameInputEl, "Name input element should be defined");
+		const descriptionInputEl = this.#descriptionInputEl;
+		assert(
+			nameInputEl && descriptionInputEl,
+			"Name and description input elements should be defined"
+		);
 
 		const timekeep = this.timekeep.getState();
 		const currentEntry = getRunningEntry(timekeep.entries);
@@ -108,12 +136,21 @@ export class TimesheetRunningEntryEditing extends ReplaceableComponent {
 		if (!currentEntry) return;
 
 		const editingName = nameInputEl.value;
+		const editingDescription = descriptionInputEl.value.trim();
 
 		this.timekeep.setState((timekeep) => {
-			const entries = updateEntry(timekeep.entries, currentEntry.id, {
+			const newEntry = {
 				...currentEntry,
 				name: editingName,
-			});
+			};
+
+			if (editingDescription.length > 0) {
+				newEntry.description = editingDescription;
+			} else {
+				delete newEntry.description;
+			}
+
+			const entries = updateEntry(timekeep.entries, currentEntry.id, newEntry);
 
 			return {
 				...timekeep,

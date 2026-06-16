@@ -68,6 +68,7 @@ export class TimesheetRunningEntry extends ContentComponent<
 				this.timekeep,
 				this.settings,
 				currentEntry.name,
+				currentEntry.description ?? "",
 				this.setCurrentView.bind(this)
 			)
 		);
