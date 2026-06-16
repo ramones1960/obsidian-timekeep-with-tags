@@ -490,16 +490,18 @@
 	white-space: nowrap;
 }
 
-/* Wrapper for the description input in the start / edit forms */
+/* Wrapper for the description input in the start / edit forms.
+ * Mirrors .timekeep-name-wrapper so the field lines up with the block name. */
 .timekeep-description-wrapper {
 	display: flex;
 	flex-flow: column;
-	gap: 0.25rem;
-	margin-top: 0.25rem;
+	flex: auto;
+	gap: 0.5rem;
 }
 
 .timekeep-description-input {
 	width: 100%;
+	padding: 0.5rem;
 	resize: vertical;
 	font-family: inherit;
 }

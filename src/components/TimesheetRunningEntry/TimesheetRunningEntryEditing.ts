@@ -95,7 +95,7 @@ export class TimesheetRunningEntryEditing extends ReplaceableComponent {
 			cls: "timekeep-input timekeep-description-input",
 			attr: {
 				placeholder: "What are you working on?",
-				rows: "2",
+				rows: "1",
 			},
 		});
 		descriptionInputEl.id = "timekeepBlockDescription";

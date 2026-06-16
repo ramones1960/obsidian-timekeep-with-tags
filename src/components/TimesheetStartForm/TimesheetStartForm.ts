@@ -100,7 +100,7 @@ export class TimesheetStartForm extends DomComponent {
 			cls: "timekeep-input timekeep-description-input",
 			attr: {
 				placeholder: "What are you working on?",
-				rows: "2",
+				rows: "1",
 			},
 		});
 		descriptionInput.id = "timekeepBlockDescription";
