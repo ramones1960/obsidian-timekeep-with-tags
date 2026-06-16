@@ -114,6 +114,30 @@ describe("schema transform", () => {
 
 		expect(result.entries[0]).toMatchObject({ tags: ["client-a"] });
 	});
+
+	it("preserves description on single entries", () => {
+		(timekeepId.next as Mock).mockReturnValue(1);
+
+		const input = {
+			entries: [
+				{
+					name: "Block",
+					startTime: "2024-03-17T01:33:51.630Z",
+					endTime: "2024-03-17T01:33:55.151Z",
+					subEntries: null,
+					description: "Fixed the login bug",
+				},
+			],
+		};
+
+		const result = parse(TIMEKEEP, input);
+
+		expect(result.entries[0]).toMatchObject({
+			id: 1,
+			name: "Block",
+			description: "Fixed the login bug",
+		});
+	});
 });
 
 describe("stripTimekeepRuntimeData", () => {
@@ -158,5 +182,47 @@ describe("stripTimekeepRuntimeData", () => {
 		};
 
 		expect(stripped.entries[0].tags).toEqual(["work"]);
+	});
+
+	it("drops empty descriptions from the stored JSON", () => {
+		const timekeep = {
+			entries: [
+				{
+					id: 1,
+					name: "Block",
+					startTime: moment("2024-03-17T01:33:51.630Z"),
+					endTime: moment("2024-03-17T01:33:55.151Z"),
+					subEntries: null,
+					description: "",
+				},
+			],
+		};
+
+		const stripped = stripTimekeepRuntimeData(timekeep) as {
+			entries: Array<Record<string, unknown>>;
+		};
+
+		expect(stripped.entries[0]).not.toHaveProperty("description");
+	});
+
+	it("keeps non-empty descriptions in the stored JSON", () => {
+		const timekeep = {
+			entries: [
+				{
+					id: 1,
+					name: "Block",
+					startTime: moment("2024-03-17T01:33:51.630Z"),
+					endTime: moment("2024-03-17T01:33:55.151Z"),
+					subEntries: null,
+					description: "Wrote the report",
+				},
+			],
+		};
+
+		const stripped = stripTimekeepRuntimeData(timekeep) as {
+			entries: Array<Record<string, unknown>>;
+		};
+
+		expect(stripped.entries[0].description).toEqual("Wrote the report");
 	});
 });

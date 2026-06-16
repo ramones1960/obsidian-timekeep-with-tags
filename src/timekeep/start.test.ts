@@ -1,9 +1,20 @@
+import moment from "moment";
 import { expect, it, describe } from "vitest";
 
 import { stripEntriesRuntimeData } from "./schema";
 import { startNewEntry, startNewNestedEntry } from "./start";
 
 describe("startNewEntry", () => {
+	it("applies tags and description to the new entry", () => {
+		const currentTime = moment();
+
+		const output = startNewEntry("Block", currentTime, [], ["work"], "Fixing the build");
+
+		const newEntry = output[output.length - 1];
+		expect(newEntry.tags).toEqual(["work"]);
+		expect(newEntry.description).toEqual("Fixing the build");
+	});
+
 	it("starting a new entry should stop any running entries", async () => {
 		const { currentTime, stopped, name, input, expected } =
 			await import("./__fixtures__/manipulating/start_entry/startShouldStopRunning");

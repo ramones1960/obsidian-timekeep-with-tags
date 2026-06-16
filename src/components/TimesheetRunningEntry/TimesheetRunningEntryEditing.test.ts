@@ -33,6 +33,7 @@ describe("TimesheetRunningEntryEditing", () => {
 			timekeep,
 			settings,
 			"Test Entry",
+			"",
 			onFinishedEditing
 		);
 		component.load();
@@ -44,6 +45,7 @@ describe("TimesheetRunningEntryEditing", () => {
 			timekeep,
 			settings,
 			"Test Entry",
+			"",
 			onFinishedEditing
 		);
 
@@ -80,6 +82,7 @@ describe("TimesheetRunningEntryEditing", () => {
 			timekeep,
 			settings,
 			"Test Entry",
+			"",
 			onFinishedEditing
 		);
 
@@ -100,6 +103,49 @@ describe("TimesheetRunningEntryEditing", () => {
 
 		expect(timekeep.getState()).toEqual({
 			entries: [{ ...entry, name: "New Name" }],
+		});
+	});
+
+	it("should save the edited description on the running entry", () => {
+		const start = moment();
+		const end = moment().add(1, "hour");
+		vi.setSystemTime(end.toDate());
+
+		const entry = {
+			id: 1,
+			name: "Test",
+			startTime: moment(start),
+			endTime: null,
+			subEntries: null,
+		};
+
+		timekeep.setState({
+			entries: [entry],
+		});
+
+		const component = new TimesheetRunningEntryEditing(
+			containerEl,
+			timekeep,
+			settings,
+			"Test",
+			"",
+			onFinishedEditing
+		);
+
+		component.load();
+
+		const formEl = component.wrapperEl!;
+
+		const descriptionInputEl = formEl.querySelector(".timekeep-description-input");
+		expect(descriptionInputEl).not.toBeNull();
+		(descriptionInputEl as HTMLTextAreaElement).value = "Working on the parser";
+
+		(formEl as HTMLFormElement).dispatchEvent(
+			new SubmitEvent("submit", { bubbles: true, cancelable: false })
+		);
+
+		expect(timekeep.getState()).toEqual({
+			entries: [{ ...entry, name: "Test", description: "Working on the parser" }],
 		});
 	});
 });

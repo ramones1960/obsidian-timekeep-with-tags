@@ -95,6 +95,14 @@ export class TimesheetRowContent extends ReplaceableComponent {
 			}
 		}
 
+		if (entry.description && entry.description.length > 0) {
+			nameColEl.createDiv({
+				cls: "timekeep-entry-description",
+				text: entry.description,
+				title: entry.description,
+			});
+		}
+
 		if (entry.subEntries !== null) {
 			createObsidianIcon(
 				nameEl,

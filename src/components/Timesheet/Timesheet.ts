@@ -8,6 +8,7 @@ import { ReplaceableComponent } from "../ReplaceableComponent";
 
 import { TimesheetCounters } from "@/components/TimesheetCounters";
 import { TimesheetExportActions } from "@/components/TimesheetExportActions";
+import { TimesheetPresetBar } from "@/components/TimesheetPresetBar";
 import { TimesheetRunningEntry } from "@/components/TimesheetRunningEntry";
 import { TimesheetStartForm } from "@/components/TimesheetStartForm";
 import { TimesheetTable } from "@/components/TimesheetTable";
@@ -57,6 +58,8 @@ export class Timesheet extends ReplaceableComponent {
 	render(wrapperEl: HTMLElement): void {
 		const counters = new TimesheetCounters(wrapperEl, this.settings, this.timekeep);
 
+		const presetBar = new TimesheetPresetBar(wrapperEl, this.timekeep, this.settings);
+
 		const startForm = new TimesheetStartForm(
 			wrapperEl,
 			this.timekeep,
@@ -84,6 +87,7 @@ export class Timesheet extends ReplaceableComponent {
 
 		this.addChild(counters);
 		this.addChild(runningEntry);
+		this.addChild(presetBar);
 		this.addChild(startForm);
 		this.addChild(table);
 		this.addChild(exportActions);

@@ -45,7 +45,25 @@ export enum UnstartedOrder {
 	LAST = "LAST",
 }
 
+/**
+ * A reusable preset defining a block name and a set of tags that can be
+ * started with a single click instead of typing them in each time.
+ */
+export interface TimekeepPreset {
+	/** Stable identifier used for editing / removing / reordering */
+	id: string;
+	/** Optional display label, falls back to {@link name} when empty */
+	label: string;
+	/** Block name applied when starting from this preset */
+	name: string;
+	/** Tags applied when starting from this preset */
+	tags: string[];
+}
+
 export interface TimekeepSettings {
+	presets: TimekeepPreset[];
+	presetsEnabled: boolean;
+
 	csvDelimiter: string;
 	csvTitle: boolean;
 	editableTimestampFormat: string;
@@ -82,6 +100,8 @@ export interface TimekeepSettings {
 }
 
 export const defaultSettings: TimekeepSettings = {
+	presets: [],
+	presetsEnabled: true,
 	pdfTitle: "Example Timesheet",
 	pdfFootnote:
 		"Information present in this timesheet should be considered Commercial in Confidence.",

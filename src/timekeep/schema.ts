@@ -41,6 +41,9 @@ const TIME_ENTRY_SINGLE = v.pipe(
 
 		// Optional tags for categorizing the entry (used by tag-based aggregation)
 		tags: v.optional(v.array(v.string())),
+
+		// Optional free-text note describing the work done for this entry
+		description: v.optional(v.string()),
 	}),
 	// At runtime a unique ID is inserted
 	v.transform((entry) => ({
@@ -61,6 +64,8 @@ const TIME_ENTRY_GROUP_BASE = v.object({
 	folder: v.optional(v.boolean()),
 	// Optional tags applied to this group; inherited by sub-entries during aggregation
 	tags: v.optional(v.array(v.string())),
+	// Optional free-text note describing the work done for this group
+	description: v.optional(v.string()),
 });
 
 const TIME_ENTRY_GROUP = v.pipe(
@@ -112,6 +117,11 @@ export function stripEntryRuntimeData(entry: TimeEntry): unknown {
 	// Drop empty tags so they don't pollute the stored JSON
 	if (entryWithoutId.tags !== undefined && entryWithoutId.tags.length === 0) {
 		delete entryWithoutId.tags;
+	}
+
+	// Drop empty descriptions so they don't pollute the stored JSON
+	if (entryWithoutId.description !== undefined && entryWithoutId.description.length === 0) {
+		delete entryWithoutId.description;
 	}
 
 	if (entryWithoutId.subEntries !== null) {

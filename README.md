@@ -34,6 +34,20 @@ Tags applied to a **group** entry are inherited by every sub-entry during aggreg
 
 Tags also appear as a `Tags` column in all export formats (Markdown, CSV, PDF, JSON).
 
+## ⚡ Presets
+
+To avoid typing the same block name and tags every time, you can define **presets** — named combinations of a block name and a set of tags. Presets are configured in the plugin settings (under the **Presets** heading) where you can add, edit, reorder and remove them.
+
+Each preset appears as a button in a quick-start bar above the start form. Clicking a preset immediately starts a new entry using the preset's block name and tags (pausing any currently running timer), so a single click is all it takes to start tracking common work.
+
+Because a preset's recorded entry is an ordinary entry carrying the configured name and tags, preset time is aggregated by the existing tag aggregation just like any other entry. The quick-start bar can be hidden with the **Show preset bar** toggle in settings.
+
+## 🗒️ Descriptions
+
+Each time entry can carry an optional **description** to record what was actually worked on for that block. A description can be entered when starting a timer (the **Description** field in the start form) and edited at any time afterwards from the entry's edit form.
+
+Descriptions are shown beneath the entry name in the table, appear as a `Description` column in the Markdown, CSV and PDF exports, and are stored on the entry in the JSON (so they are available to `dataviewjs` via `entry.description`). Descriptions are notes only — they are not used as an aggregation key.
+
 ## ✏️ Editing & Deleting
 
 If you accidentally gave a block an incorrect name or started the timer late, you can use the editing feature to update the stored data or delete the entry.

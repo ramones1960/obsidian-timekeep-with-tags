@@ -12,7 +12,12 @@ import { TimeEntry, TimeEntryGroup } from "@/timekeep/schema";
  * @param startTime The start time for the entry
  * @returns The created entry
  */
-export function createEntry(name: string, startTime: Moment, tags?: string[]): TimeEntry {
+export function createEntry(
+	name: string,
+	startTime: Moment,
+	tags?: string[],
+	description?: string
+): TimeEntry {
 	const entry: TimeEntry = {
 		id: timekeepId.next(),
 		name,
@@ -23,6 +28,10 @@ export function createEntry(name: string, startTime: Moment, tags?: string[]): T
 
 	if (tags && tags.length > 0) {
 		entry.tags = tags;
+	}
+
+	if (description && description.length > 0) {
+		entry.description = description;
 	}
 
 	return entry;
@@ -41,10 +50,11 @@ export function withEntry(
 	entries: TimeEntry[],
 	name: string,
 	startTime: Moment,
-	tags?: string[]
+	tags?: string[],
+	description?: string
 ): TimeEntry[] {
 	const entryName = getEntryName(name, entries);
-	return [...entries, createEntry(entryName, startTime, tags)];
+	return [...entries, createEntry(entryName, startTime, tags, description)];
 }
 
 /**
@@ -165,7 +175,10 @@ function makeGroupEntry(entry: TimeEntry): TimeEntryGroup {
 		return entry;
 	}
 
-	// Move tags off the child entry and onto the parent group
+	// Move tags off the child entry and onto the parent group.
+	// The description is intentionally left on the child: unlike tags (which
+	// are consolidated on the parent for aggregation) a description is a note
+	// about a single recording, so it stays with that record as "Part 1".
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars -- intentionally dropping tags from the child
 	const { tags, ...entryWithoutTags } = entry;
 

@@ -12,19 +12,22 @@ import { TimeEntry } from "@/timekeep/schema";
  * @param name Name of the new entry
  * @param currentTime The current time to use for the start time
  * @param entries Entries to append to
+ * @param tags Optional tags to apply to the new entry
+ * @param description Optional description of the work for the new entry
  * @returns Entries with the new entry added
  */
 export function startNewEntry(
 	name: string,
 	currentTime: Moment,
 	entries: TimeEntry[],
-	tags?: string[]
+	tags?: string[],
+	description?: string
 ): TimeEntry[] {
 	// Stop any already running entries
 	entries = stopRunningEntries(entries, currentTime);
 
 	// Add the new entry
-	entries = withEntry(entries, name, currentTime, tags);
+	entries = withEntry(entries, name, currentTime, tags, description);
 	return entries;
 }
 
@@ -63,9 +66,5 @@ export function startNewNestedEntry(
 	}
 
 	// If the entry hasn't been started then start it
-	return updateEntry(
-		entries,
-		currentEntry.id,
-		createEntry(currentEntry.name, currentTime, tags)
-	);
+	return updateEntry(entries, currentEntry.id, createEntry(currentEntry.name, currentTime, tags));
 }

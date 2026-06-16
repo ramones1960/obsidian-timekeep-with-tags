@@ -11,7 +11,7 @@ import { Timekeep } from "@/timekeep/schema";
  * @returns The created row
  */
 function createHeader(): RawTableRow {
-	return ["Block", "Start Time", "End time", "Duration", "Tags"];
+	return ["Block", "Start Time", "End time", "Duration", "Tags", "Description"];
 }
 
 /**

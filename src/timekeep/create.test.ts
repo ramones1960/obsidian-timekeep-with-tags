@@ -44,6 +44,26 @@ describe("createEntry", () => {
 
 		expect(entry.tags).toBeUndefined();
 	});
+
+	it("attaches a description when provided", () => {
+		const currentTime = moment();
+		const entry = createEntry("Block", currentTime, undefined, "Wrote the report");
+
+		expect(stripEntryRuntimeData(entry)).toStrictEqual({
+			name: "Block",
+			startTime: currentTime,
+			endTime: null,
+			subEntries: null,
+			description: "Wrote the report",
+		});
+	});
+
+	it("does not attach an empty description", () => {
+		const currentTime = moment();
+		const entry = createEntry("Block", currentTime, undefined, "");
+
+		expect(entry.description).toBeUndefined();
+	});
 });
 
 describe("withEntry", () => {
@@ -79,6 +99,13 @@ describe("withEntry", () => {
 		const output = withEntry([], "Tagged", currentTime, ["project-x"]);
 
 		expect(output[0].tags).toEqual(["project-x"]);
+	});
+
+	it("propagates the description to the new entry", () => {
+		const currentTime = moment();
+		const output = withEntry([], "Described", currentTime, undefined, "Initial setup");
+
+		expect(output[0].description).toEqual("Initial setup");
 	});
 });
 
@@ -154,6 +181,20 @@ describe("withSubEntry", () => {
 		for (const child of output.subEntries!) {
 			expect(child.tags).toBeUndefined();
 		}
+	});
+
+	it("keeps the description on the original record when converting to a group", () => {
+		const currentTime = moment();
+		const parent = createEntry("Block 1", currentTime, undefined, "Investigated the bug");
+
+		const output = withSubEntry(parent, "", currentTime);
+
+		// The description stays with the original recording (now "Part 1"),
+		// it is not lifted onto the parent group like tags are.
+		expect(output.description).toBeUndefined();
+		expect(output.subEntries).not.toBeNull();
+		expect(output.subEntries![0].name).toBe("Part 1");
+		expect(output.subEntries![0].description).toBe("Investigated the bug");
 	});
 
 	it("keeps an existing group's tags consolidated when extending it", () => {

@@ -40,3 +40,10 @@ describe("legacy settings compatibility conversion", () => {
 		expect(setting).toStrictEqual(Object.assign({}, defaultSettings, expected));
 	});
 });
+
+describe("preset defaults", () => {
+	test("default settings start with presets enabled and no presets", () => {
+		expect(defaultSettings.presets).toEqual([]);
+		expect(defaultSettings.presetsEnabled).toBe(true);
+	});
+});
